@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { PieceConnection } from "@/types/puzzle";
 
 interface Point {
   x: number;
@@ -17,6 +18,11 @@ interface Piece {
   y: number;
   width: number;
   height: number;
+  connections: PieceConnection;
+  gridPosition: {
+    row: number;
+    col: number;
+  };
 }
 
 interface UsePuzzleEditorProps {
@@ -29,7 +35,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   const [hoverPoint, setHoverPoint] = useState<Point | null>(null);
   const [lines, setLines] = useState<Lines>({ horizontal: [], vertical: [] });
   const [pieces, setPieces] = useState<Piece[]>([]);
-  console.log("🚀 ~ usePuzzleEditor ~ pieces:", pieces)
 
   const drawLines = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!image) return;
@@ -98,7 +103,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     }
   }, [imageUrl]);
 
-  // Handle drawing whenever relevant state changes
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx) {
@@ -126,6 +130,15 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     }));
   }, [hoverPoint, image]);
 
+  const calculateConnections = (row: number, col: number, totalRows: number, totalCols: number): PieceConnection => {
+    return {
+      top: row > 0 ? (row - 1) * totalCols + col : undefined,
+      right: col < totalCols - 1 ? row * totalCols + (col + 1) : undefined,
+      bottom: row < totalRows - 1 ? (row + 1) * totalCols + col : undefined,
+      left: col > 0 ? row * totalCols + (col - 1) : undefined,
+    };
+  };
+
   const breakImage = useCallback(() => {
     if (!image || !canvasRef.current) return;
 
@@ -137,13 +150,16 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     const allVertical = [0, ...vertical, image.width];
     const allHorizontal = [0, ...horizontal, image.height];
 
+    const totalRows = allHorizontal.length - 1;
+    const totalCols = allVertical.length - 1;
+
     // Create pieces from grid
-    for (let i = 0; i < allVertical.length - 1; i++) {
-      for (let j = 0; j < allHorizontal.length - 1; j++) {
-        const x = allVertical[i];
-        const y = allHorizontal[j];
-        const width = allVertical[i + 1] - x;
-        const height = allHorizontal[j + 1] - y;
+    for (let row = 0; row < totalRows; row++) {
+      for (let col = 0; col < totalCols; col++) {
+        const x = allVertical[col];
+        const y = allHorizontal[row];
+        const width = allVertical[col + 1] - x;
+        const height = allHorizontal[row + 1] - y;
 
         // Create a canvas for this piece
         const pieceCanvas = document.createElement('canvas');
@@ -159,14 +175,19 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
             0, 0, width, height
           );
 
+          const connections = calculateConnections(row, col, totalRows, totalCols);
+
           newPieces.push({
-            id: id++,
+            id,
             image: pieceCanvas,
             x,
             y,
             width,
             height,
+            connections,
+            gridPosition: { row, col }
           });
+          id++;
         }
       }
     }

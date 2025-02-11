@@ -1,59 +1,61 @@
-import { useRef } from "react";
-import Image from "next/image";
-import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-import { PieceData, PiecePosition } from "@/types/puzzle";
+"use client";
+import React, { useRef, useEffect } from "react";
+import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
+import { PieceData } from "@/types/puzzle";
 
 interface DraggablePieceProps {
   piece: PieceData;
-  width: number;
-  height: number;
-  position: PiecePosition;
-  isPlaced?: boolean;
-  onDragStop: (e: DraggableEvent, data: DraggableData, piece: PieceData) => void;
+  onDrag: (id: number, x: number, y: number) => void;
+  position: { x: number; y: number };
+  isPartOfGroup: boolean;
 }
 
-export const DraggablePiece = ({ 
-  piece, 
-  width, 
-  height,
+export const DraggablePiece: React.FC<DraggablePieceProps> = ({
+  piece,
+  onDrag,
   position,
-  isPlaced = false,
-  onDragStop
-}: DraggablePieceProps) => {
-  const nodeRef = useRef(null);
+  isPartOfGroup
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const handleDragStop = (e: DraggableEvent, data: DraggableData) => {
-    onDragStop(e, data, piece);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !piece.imageSrc) return;
+
+    const img = new Image();
+    img.src = piece.imageSrc;
+    img.onload = () => {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, piece.width, piece.height);
+      }
+    };
+  }, [piece]);
+
+  const handleDrag = (_: DraggableEvent, data: DraggableData) => {
+    onDrag(piece.id, data.x, data.y);
   };
 
   return (
     <Draggable
-      nodeRef={nodeRef}
       position={position}
-      onStop={handleDragStop}
-      disabled={isPlaced}
+      onDrag={handleDrag}
+      bounds="parent"
     >
-      <div
-        ref={nodeRef}
-        className={`absolute ${isPlaced ? 'cursor-default' : 'cursor-grab'} transition-opacity`}
+      <canvas
+        ref={canvasRef}
+        width={piece.width}
+        height={piece.height}
+        className={`absolute cursor-grab hover:z-10 ${
+          isPartOfGroup ? "shadow-lg" : ""
+        }`}
         style={{
-          width,
-          height,
-          opacity: isPlaced ? 0.8 : 1,
+          width: piece.width,
+          height: piece.height,
+          border: isPartOfGroup ? "2px solid #4CAF50" : "1px solid rgba(255,255,255,0.2)",
+          transition: "border 0.3s ease"
         }}
-      >
-        <Image
-          src={piece.imageSrc}
-          alt={`Piece ${piece.id}`}
-          width={width}
-          height={height}
-          className="touch-none max-w-full max-h-full object-contain select-none"
-          priority
-          draggable={false}
-        />
-      </div>
+      />
     </Draggable>
   );
 };
-
-export default DraggablePiece;

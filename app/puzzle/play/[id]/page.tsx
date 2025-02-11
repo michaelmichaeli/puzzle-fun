@@ -1,117 +1,84 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { Stage, Layer, Image as KonvaImage } from "react-konva";
-import type { PieceData } from "@/types/puzzle";
-import DraggablePiece from "@/app/components/DraggablePiece";
-import { PuzzleGameStatus } from "@/app/components/PuzzleGameStatus";
-import BackButton from "@/app/components/BackButton";
-import { DISPLAY_WIDTH, DISPLAY_HEIGHT, calculateImageDimensions } from "@/app/constants/dimensions";
-import { usePuzzleGame } from "@/app/hooks/usePuzzleGame";
-import type { DraggableEvent, DraggableData } from "react-draggable";
+import { useEffect, useState } from "react";
+import { Puzzle, PieceData } from "@/types/puzzle";
+import { PuzzleSolver } from "@/app/components/PuzzleSolver";
+import { useRouter } from "next/navigation";
 
-const PuzzlePlayPage = () => {
-  const { id } = useParams();
-  const boardRef = useRef<HTMLDivElement>(null);
-  const [imageDimensions, setImageDimensions] = useState({ 
-    width: DISPLAY_WIDTH, 
-    height: DISPLAY_HEIGHT,
-    scaleFactors: { x: 1, y: 1 }
-  });
+interface PlayPageProps {
+  params: { id: string };
+}
 
-  const {
-    puzzle,
-    holedImage,
-    placedPieces,
-    piecePositions,
-    hasLoaded,
-    handlePieceDragStop
-  } = usePuzzleGame({
-    id: id as string,
-    boardWidth: imageDimensions.width,
-    boardHeight: imageDimensions.height
-  });
+export default function PlayPage({ params }: PlayPageProps) {
+  const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
+  const [isSolved, setIsSolved] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (holedImage) {
-      const dimensions = calculateImageDimensions(holedImage.width, holedImage.height);
-      setImageDimensions(dimensions);
-    }
-  }, [holedImage]);
+    // Load puzzle data from local storage
+    const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
+    const selectedPuzzle = savedPuzzles.find((p: Puzzle) => p.id === params.id);
+    if (selectedPuzzle) {
+      // Pre-load all piece images
+      const loadPieceImages = async () => {
+        const loadImage = (src: string): Promise<void> => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => resolve();
+          });
+        };
 
-  const handlePieceDrag = (e: DraggableEvent, data: DraggableData, piece: PieceData) => {
-    if (!boardRef.current) return;
-    handlePieceDragStop(boardRef.current.getBoundingClientRect(), data, piece);
+        // Load all piece images concurrently
+        await Promise.all(selectedPuzzle.pieces.map((piece: PieceData) => loadImage(piece.imageSrc)));
+        setPuzzle(selectedPuzzle);
+      };
+
+      loadPieceImages();
+    } else {
+      // Puzzle not found, redirect to home
+      router.push("/");
+    }
+  }, [params.id, router]);
+
+  const handlePuzzleSolved = () => {
+    setIsSolved(true);
+    // You could save the completion status, show a celebration animation, etc.
   };
 
-  if (!hasLoaded) {
+  if (!puzzle) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <h2 className="text-xl font-semibold">Loading puzzle...</h2>
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-xl">Loading puzzle...</div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      <BackButton />
-      <div className="text-center p-5 relative z-10">
-        <h1 className="text-2xl font-bold mb-5">Puzzle {id}</h1>
-
-        {puzzle && holedImage && (
-          <>
-            <PuzzleGameStatus 
-              totalPieces={puzzle.pieces.length}
-              placedPieces={placedPieces.size}
-            />
-
-            <div className="relative w-full h-[700px] flex justify-center items-center">
-              <div 
-                ref={boardRef}
-                className="relative bg-gray-100 rounded-lg shadow-md"
-                style={{ 
-                  width: imageDimensions.width, 
-                  height: imageDimensions.height,
-                }}
-              >
-                <Stage 
-                  width={imageDimensions.width} 
-                  height={imageDimensions.height} 
-                  className="absolute top-0 left-0 border-2 border-black"
-                >
-                  <Layer>
-                    <KonvaImage 
-                      image={holedImage} 
-                      width={imageDimensions.width} 
-                      height={imageDimensions.height} 
-                    />
-                  </Layer>
-                </Stage>
-              </div>
-
-              {puzzle.pieces.map((piece) => {
-                const pieceWidth = piece.widthRatio * imageDimensions.width;
-                const pieceHeight = piece.heightRatio * imageDimensions.height;
-                
-                return (
-                  <DraggablePiece
-                    key={piece.id}
-                    piece={piece}
-                    width={pieceWidth}
-                    height={pieceHeight}
-                    position={piecePositions[piece.id]}
-                    onDragStop={(e, data) => handlePieceDrag(e, data, piece)}
-                    isPlaced={placedPieces.has(piece.id)}
-                  />
-                );
-              })}
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold">{puzzle.title}</h1>
+          {isSolved && (
+            <div className="text-green-500 font-bold animate-bounce">
+              🎉 Puzzle Solved! Congratulations! 🎉
             </div>
-          </>
-        )}
+          )}
+        </div>
+        
+        <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl">
+          {puzzle.pieces && puzzle.pieces.length > 0 ? (
+            <PuzzleSolver
+              pieces={puzzle.pieces}
+              onSolved={handlePuzzleSolved}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              No puzzle pieces found
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
-};
-
-export default PuzzlePlayPage;
+}
