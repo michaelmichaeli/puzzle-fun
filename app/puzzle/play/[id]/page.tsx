@@ -6,14 +6,13 @@ import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import { Puzzle } from "@/types/puzzle";
 import DraggablePiece from "@/app/components/DraggablePiece";
 import BackButton from "@/app/components/BackButton";
-
-const IMAGE_WIDTH = 800;
-const IMAGE_HEIGHT = 600;
+import { DISPLAY_WIDTH, DISPLAY_HEIGHT, calculateImageDimensions } from "@/app/constants/dimensions";
 
 const PuzzlePlayPage = () => {
   const { id } = useParams(); // ✅ Get puzzle ID from URL
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
   const [holedImage, setHoledImage] = useState<HTMLImageElement | null>(null);
+  const [imageDimensions, setImageDimensions] = useState({ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT });
 
   useEffect(() => {
     const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
@@ -25,7 +24,11 @@ const PuzzlePlayPage = () => {
       // ✅ Load holed image properly
       const img = new window.Image();
       img.src = selectedPuzzle.holedImage;
-      img.onload = () => setHoledImage(img);
+      img.onload = () => {
+        const dimensions = calculateImageDimensions(img.width, img.height);
+        setImageDimensions(dimensions);
+        setHoledImage(img);
+      };
     }
   }, [id]);
 
@@ -49,47 +52,57 @@ const PuzzlePlayPage = () => {
         <div style={{
           position: "relative",
           width: "100%",
-          height: IMAGE_HEIGHT + 100,
+          height: imageDimensions.height + 100,
           display: "flex",
           justifyContent: "center",
           alignItems: "center"
         }}>
           <div style={{ 
             position: "relative",
-            width: IMAGE_WIDTH, 
-            height: IMAGE_HEIGHT,
+            width: imageDimensions.width, 
+            height: imageDimensions.height,
             backgroundColor: "#f0f0f0",
             borderRadius: "8px",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
           }}>
           {/* Puzzle Board (Holed Image) */}
-          <Stage width={IMAGE_WIDTH} height={IMAGE_HEIGHT} style={{ border: "2px solid black" }}>
+          <Stage 
+            width={imageDimensions.width} 
+            height={imageDimensions.height} 
+            style={{ border: "2px solid black" }}
+          >
             <Layer>
-              <KonvaImage image={holedImage} x={0} y={0} width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
+              <KonvaImage 
+                image={holedImage} 
+                x={0} 
+                y={0} 
+                width={imageDimensions.width} 
+                height={imageDimensions.height} 
+              />
             </Layer>
           </Stage>
           </div>
 
           {/* Render Draggable Pieces relative to outer container */}
           {puzzle.pieces.map((piece) => {
-            const pieceWidth = piece.widthRatio * IMAGE_WIDTH;
-            const pieceHeight = piece.heightRatio * IMAGE_HEIGHT;
+            const pieceWidth = piece.widthRatio * imageDimensions.width;
+            const pieceHeight = piece.heightRatio * imageDimensions.height;
             
             // Randomly choose left or right side
             const isLeftSide = Math.random() < 0.5;
             
             // Calculate X position with controlled spacing
-            const sideOffset = 250; // Distance from puzzle edge
-            const randomSpread = 150; // Random spread within the side area
+            const sideOffset = imageDimensions.width * 0.3; // 30% of image width for side spacing
+            const randomSpread = imageDimensions.width * 0.15; // 15% of image width for random spread
             
             const randomX = isLeftSide 
               ? -sideOffset + (Math.random() * randomSpread)
-              : IMAGE_WIDTH + (Math.random() * randomSpread);
+              : imageDimensions.width + (Math.random() * randomSpread);
             
             // Calculate Y position with better vertical distribution
             // Divide the height into sections to ensure more even distribution
             const section = Math.floor(Math.random() * 4); // 4 sections
-            const sectionHeight = IMAGE_HEIGHT / 4;
+            const sectionHeight = imageDimensions.height / 4;
             const randomY = (section * sectionHeight) + (Math.random() * sectionHeight - pieceHeight/2);
 
             return (

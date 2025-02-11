@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Stage, Layer, Image, Line } from "react-konva";
 import type Konva from "konva";
+import { DISPLAY_WIDTH, DISPLAY_HEIGHT, COMPRESSION_QUALITY, MAX_PIECE_SIZE, calculateImageDimensions } from "@/app/constants/dimensions";
 
 interface PuzzleEditorProps {
   imageUrl: string;
@@ -35,11 +36,6 @@ interface PuzzleData {
   pieces: PieceData[];
 }
 
-const DISPLAY_WIDTH = 800;
-const DISPLAY_HEIGHT = 600;
-const MAX_PIECE_SIZE = 300;
-const COMPRESSION_QUALITY = 0.3;
-
 const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [canvasImage, setCanvasImage] = useState<HTMLImageElement | null>(null);
@@ -57,21 +53,11 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     img.src = imageUrl;
     img.crossOrigin = "Anonymous";
     img.onload = () => {
-      console.log('Image loaded with dimensions:', {
-        width: img.width,
-        height: img.height,
-        naturalWidth: img.naturalWidth,
-        naturalHeight: img.naturalHeight,
-        displayWidth: DISPLAY_WIDTH,
-        displayHeight: DISPLAY_HEIGHT
-      });
+      const dimensions = calculateImageDimensions(img.width, img.height);
       
       setImage(img);
       setCanvasImage(img);
-      setScaleFactors({
-        x: DISPLAY_WIDTH / img.width,
-        y: DISPLAY_HEIGHT / img.height
-      });
+      setScaleFactors(dimensions.scaleFactors);
     };
   }, [imageUrl]);
 
@@ -85,7 +71,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     setIsDrawing(true);
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
-    console.log('Mouse down at:', pos);
     setLines([...lines, { points: [pos.x, pos.y] }]);
   };
 
@@ -181,20 +166,8 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   const savePiece = (lines: LineData[]) => {
     if (!image) return;
 
-    console.log('Original image dimensions:', {
-      width: image.width,
-      height: image.height,
-      naturalWidth: image.naturalWidth,
-      naturalHeight: image.naturalHeight,
-      scaleFactors
-    });
-
-    console.log('Lines for cutting:', lines);
-    
     const scaledPoints = lines.flatMap(l => scalePoints(l.points));
     const bounds = getBoundingBox(scaledPoints);
-    
-    console.log('Calculated bounds for piece:', bounds);
 
     const pieceCanvas = document.createElement("canvas");
     pieceCanvas.width = bounds.width;
@@ -204,15 +177,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     if (!pieceCtx) return;
 
     pieceCtx.clearRect(0, 0, bounds.width, bounds.height);
-
-    console.log('Drawing piece from source area:', {
-      sourceX: bounds.x,
-      sourceY: bounds.y,
-      sourceWidth: bounds.width,
-      sourceHeight: bounds.height,
-      destWidth: bounds.width,
-      destHeight: bounds.height
-    });
 
     pieceCtx.drawImage(
       image,
@@ -235,8 +199,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       const adjustedPoints = scaledPoints.map((point, index) =>
         index % 2 === 0 ? point - bounds.x : point - bounds.y
       );
-      
-      console.log('Adjusted points for masking:', adjustedPoints);
       
       if (adjustedPoints.length < 4) return;
       pieceCtx.moveTo(adjustedPoints[0], adjustedPoints[1]);
@@ -311,8 +273,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   };
 
   const getBoundingBox = (points: number[]) => {
-    console.log('getBoundingBox input points:', points);
-    
     const xVals = points.filter((_, i) => i % 2 === 0);
     const yVals = points.filter((_, i) => i % 2 !== 0);
     
@@ -323,7 +283,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       height: Math.max(...yVals) - Math.min(...yVals),
     };
 
-    console.log('Calculated bounding box:', bounds);
     return bounds;
   };
 
@@ -355,8 +314,8 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     <div>
       <Stage
         ref={stageRef}
-        width={DISPLAY_WIDTH}
-        height={DISPLAY_HEIGHT}
+            width={image ? calculateImageDimensions(image.width, image.height).width : DISPLAY_WIDTH}
+            height={image ? calculateImageDimensions(image.width, image.height).height : DISPLAY_HEIGHT}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -365,8 +324,8 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
           {canvasImage && (
             <Image
               image={canvasImage}
-              width={DISPLAY_WIDTH}
-              height={DISPLAY_HEIGHT}
+              width={image ? calculateImageDimensions(image.width, image.height).width : DISPLAY_WIDTH}
+              height={image ? calculateImageDimensions(image.width, image.height).height : DISPLAY_HEIGHT}
             />
           )}
           {lines.map((line, i) => (
