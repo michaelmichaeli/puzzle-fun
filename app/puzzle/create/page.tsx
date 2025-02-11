@@ -1,8 +1,9 @@
 "use client";
 
-import UploadImage from "../../components/UploadImage";
-import PuzzleEditor from "../../components/PuzzleEditor";
 import { useState, useRef } from "react";
+import UploadImage from "@/app/components/UploadImage";
+import PuzzleEditor from "@/app/components/PuzzleEditor";
+import BackButton from "@/app/components/BackButton";
 
 export default function CreatePuzzlePage() {
 	const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -20,8 +21,10 @@ export default function CreatePuzzlePage() {
 	};
 
 	return (
-		<div className="p-4 max-w-md mx-auto">
-			<h1 className="text-2xl mb-4">Create Puzzle</h1>
+<div>
+<BackButton />
+<div className="p-4 mx-auto">
+<h1 className="text-2xl mb-4">Create Puzzle</h1>
 			{imageSrc ? (
 				<div
 					ref={imageContainerRef}
@@ -31,7 +34,8 @@ export default function CreatePuzzlePage() {
 				</div>
 			) : (
 				<UploadImage handleImageChange={handleImageChange} />
-			)}
-		</div>
+)}
+</div>
+</div>
 	);
 }
