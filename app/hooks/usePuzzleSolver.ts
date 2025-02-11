@@ -1,10 +1,9 @@
 import { useState, useCallback } from "react";
 import { PieceData, ConnectedGroup } from "@/types/puzzle";
 
-const CONNECTION_THRESHOLD = 15; // pixels for edge proximity
-const ALIGNMENT_THRESHOLD = 8; // pixels for edge alignment
+const CONNECTION_THRESHOLD = 15;
+const ALIGNMENT_THRESHOLD = 8;
 
-// Audio feedback for connections
 const playConnectionSound = () => {
   const audio = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+NAwAAAAAAAAAAAAFhpbmcAAAAPAAAAAwAAA/YAVlZWVlZWVlZWVlZWVlZWVlZWVlZra2tra2tra2tra2tra2tra2tra4CAgICAgICAgICAgICAgICAgICAgJWVlZWVlZWVlZWVlZWVlZWVlZWVlf///////////////////////////////////////////8XAAAAA//NAxAANgwqQAUYYAP+nRF1MzE7OTk4Sjs5PT05SPs5PTk5OUfjk5OUg7OT85Oj84/nJ+lH46P0o/Sj9H6UeJR4//KPEcUeJR//Eo7/4lHiUf//Eo7/KO/iP//Eo7/8o7/Eo7/w==");
   audio.volume = 0.2;
@@ -137,16 +136,13 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
   }, [positions]);
 
   const onPieceMove = useCallback((pieceId: number, x: number, y: number) => {
-    // Update piece position
-    setPositions(prev => ({
+  setPositions(prev => ({
       ...prev,
       [pieceId]: { x, y }
     }));
 
-    // Find the piece's current group
     const currentGroup = findGroupByPieceId(pieceId);
     
-    // Move all pieces in the group relative to the dragged piece
     if (currentGroup) {
       const deltaX = x - positions[pieceId].x;
       const deltaY = y - positions[pieceId].y;
@@ -166,7 +162,6 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
       });
     }
 
-    // Check for new connections
     const currentPiece = pieces.find(p => p.id === pieceId);
     if (!currentPiece) return;
 
@@ -175,16 +170,13 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
 
       const [shouldConnectPieces, connectionSide] = shouldConnect(currentPiece, otherPiece);
       if (shouldConnectPieces && connectionSide) {
-        // Play sound effect
         playConnectionSound();
         const otherGroup = findGroupByPieceId(otherPiece.id);
         const snapPosition = getSnapPosition(currentPiece, otherPiece, connectionSide);
 
-        // Snap the piece or group to the correct position
         setPositions(prev => {
           const newPositions = { ...prev };
           if (currentGroup) {
-            // Move entire group to align with snap position
             const deltaX = snapPosition.x - positions[pieceId].x;
             const deltaY = snapPosition.y - positions[pieceId].y;
             currentGroup.pieces.forEach(groupPieceId => {
@@ -200,7 +192,6 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
           return newPositions;
         });
         
-        // Both pieces are unconnected
         if (!currentGroup && !otherGroup) {
           setConnectedGroups(prev => [...prev, {
             pieces: [pieceId, otherPiece.id],
@@ -213,7 +204,6 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
             }
           }]);
         }
-        // Current piece is unconnected but other piece is in a group
         else if (!currentGroup && otherGroup) {
           setConnectedGroups(prev => prev.map(group =>
             group === otherGroup
@@ -230,7 +220,6 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
               : group
           ));
         }
-        // Both pieces are in different groups
         else if (currentGroup && otherGroup && currentGroup !== otherGroup) {
           setConnectedGroups(prev => {
             const mergedGroup = mergeGroups(currentGroup, otherGroup, pieceId);

@@ -3,7 +3,7 @@
 import React, { MouseEvent, useState, useEffect } from "react";
 import { usePuzzleEditor } from "../hooks/usePuzzleEditor";
 import { useRouter } from "next/navigation";
-import { Puzzle } from "@/types/puzzle";
+import { Puzzle, AiGeneratedContent } from "@/types/puzzle";
 
 interface PuzzleEditorProps {
   imageUrl: string;
@@ -12,6 +12,33 @@ interface PuzzleEditorProps {
 const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [isGeneratingAiContent, setIsGeneratingAiContent] = useState(false);
+  const [aiContent, setAiContent] = useState<AiGeneratedContent>();
+
+  const generateAiContent = async (imageUrl: string) => {
+    setIsGeneratingAiContent(true);
+    try {
+      const response = await fetch("/api/generate-ai-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrl })
+      });
+      
+      if (!response.ok) throw new Error("Failed to generate AI content");
+      
+      const data = await response.json();
+      setAiContent(data);
+      setTitle(data.title);
+    } catch (error) {
+      console.error("Error generating AI content:", error);
+    } finally {
+      setIsGeneratingAiContent(false);
+    }
+  };
+
+  useEffect(() => {
+    generateAiContent(imageUrl);
+  }, [imageUrl]);
   const {
     canvasRef,
     pieces,
@@ -43,6 +70,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
         title: title.trim(),
         imageUrl,
         createdAt: new Date().toISOString(),
+        ...(aiContent && { aiContent }),
         pieces: pieces.map(piece => ({
           id: piece.id,
           imageSrc: piece.image.toDataURL(),
@@ -72,6 +100,15 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 
   return (
     <div className="relative space-y-4">
+      {isGeneratingAiContent && (
+        <div className="text-blue-500">Generating AI descriptions...</div>
+      )}
+      {aiContent && (
+        <div className="space-y-2 text-gray-300">
+          <p><span className="text-gray-500">Description:</span> {aiContent.description}</p>
+          <p><span className="text-gray-500">Context:</span> {aiContent.context}</p>
+        </div>
+      )}
       <div className="flex gap-4 items-center">
         <input
           type="text"

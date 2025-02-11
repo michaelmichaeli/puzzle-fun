@@ -56,8 +56,16 @@ export default function PlayPage({ params }: PlayPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">{puzzle.title}</h1>
+      <div className="flex justify-between items-start mb-8">
+        <div className="space-y-4">
+          <h1 className="text-2xl font-bold">{puzzle.title}</h1>
+          {puzzle.aiContent && (
+            <div className="max-w-2xl space-y-2 text-gray-300">
+              <p><span className="text-gray-500">Description:</span> {puzzle.aiContent.description}</p>
+              <p><span className="text-gray-500">Context:</span> {puzzle.aiContent.context}</p>
+            </div>
+          )}
+        </div>
         {isSolved && (
           <div className="text-green-500 font-bold animate-bounce">
             🎉 Puzzle Solved! Congratulations! 🎉

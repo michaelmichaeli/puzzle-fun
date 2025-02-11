@@ -1,15 +1,15 @@
 export interface PieceConnection {
-  top?: number;    // ID of the piece that should connect above
-  right?: number;  // ID of the piece that should connect to the right
-  bottom?: number; // ID of the piece that should connect below
-  left?: number;   // ID of the piece that should connect to the left
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
 }
 
 export interface ConnectedGroup {
-  pieces: number[];  // IDs of all pieces in this group
-  positions: {       // Relative positions within the group
+  pieces: number[];
+  positions: {
     [pieceId: number]: {
-      relativeX: number;  // Position relative to group's top-left corner
+      relativeX: number;
       relativeY: number;
     }
   }
@@ -37,6 +37,12 @@ export interface PiecePositions {
   [pieceId: number]: PiecePosition;
 }
 
+export interface AiGeneratedContent {
+  title: string;
+  description: string;
+  context: string;
+}
+
 export interface Puzzle {
   id: string;
   title: string;
@@ -46,4 +52,5 @@ export interface Puzzle {
   originalWidth: number;
   originalHeight: number;
   connectedGroups: ConnectedGroup[];
+  aiContent?: AiGeneratedContent;
 }
