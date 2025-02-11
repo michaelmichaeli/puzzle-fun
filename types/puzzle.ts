@@ -1,14 +1,12 @@
 export interface PieceData {
   id: number;
   imageSrc: string;
-  x: number;
-  y: number;
+  x: number;  // Target position X where piece was cut from
+  y: number;  // Target position Y where piece was cut from
   width: number;
   height: number;
-  xRatio: number;
-  yRatio: number;
-  widthRatio: number;
-  heightRatio: number;
+  widthRatio: number;  // For piece sizing
+  heightRatio: number; // For piece sizing
   shapePath: number[];
 }
 

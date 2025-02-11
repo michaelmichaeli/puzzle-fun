@@ -2,6 +2,7 @@ export const DISPLAY_WIDTH = 800;
 export const DISPLAY_HEIGHT = 600;
 export const COMPRESSION_QUALITY = 0.3;
 export const MAX_PIECE_SIZE = 300;
+export const PIECE_PLACEMENT_THRESHOLD = 30; // Distance in pixels for correct piece placement
 
 export function calculateImageDimensions(originalWidth: number, originalHeight: number) {
   const targetAspectRatio = DISPLAY_WIDTH / DISPLAY_HEIGHT;

@@ -17,14 +17,12 @@ interface LineData {
 interface PieceData {
   id: number;
   imageSrc: string;
-  x: number;
-  y: number;
+  x: number;  // Target position X where piece was cut from
+  y: number;  // Target position Y where piece was cut from
   width: number;
   height: number;
-  xRatio: number;
-  yRatio: number;
-  widthRatio: number;
-  heightRatio: number;
+  widthRatio: number;  // For piece sizing
+  heightRatio: number; // For piece sizing
   shapePath: number[];
 }
 
@@ -223,8 +221,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       y: bounds.y,
       width: bounds.width,
       height: bounds.height,
-      xRatio: bounds.x / image.width,
-      yRatio: bounds.y / image.height,
       widthRatio: bounds.width / image.width,
       heightRatio: bounds.height / image.height,
       shapePath: scaledPoints,
