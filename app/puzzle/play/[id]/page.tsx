@@ -55,29 +55,27 @@ export default function PlayPage({ params }: PlayPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">{puzzle.title}</h1>
-          {isSolved && (
-            <div className="text-green-500 font-bold animate-bounce">
-              🎉 Puzzle Solved! Congratulations! 🎉
-            </div>
-          )}
-        </div>
-        
-        <div className="relative aspect-video rounded-lg overflow-hidden shadow-xl">
-          {puzzle.pieces && puzzle.pieces.length > 0 ? (
-            <PuzzleSolver
-              pieces={puzzle.pieces}
-              onSolved={handlePuzzleSolved}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              No puzzle pieces found
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen bg-gray-900 text-white p-4">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">{puzzle.title}</h1>
+        {isSolved && (
+          <div className="text-green-500 font-bold animate-bounce">
+            🎉 Puzzle Solved! Congratulations! 🎉
+          </div>
+        )}
+      </div>
+      
+      <div className="relative rounded-lg overflow-hidden shadow-xl mt-4">
+        {puzzle.pieces && puzzle.pieces.length > 0 ? (
+          <PuzzleSolver
+            pieces={puzzle.pieces}
+            onSolved={handlePuzzleSolved}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            No puzzle pieces found
+          </div>
+        )}
       </div>
     </div>
   );

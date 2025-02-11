@@ -14,7 +14,7 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) 
   const [, setBoardSize] = useState({ width: 0, height: 0 });
   const { positions, connectedGroups, onPieceMove, isSolved } = usePuzzleSolver({ pieces });
 
-  // Initialize random positions for pieces
+  // Initialize positions for pieces in a grid layout
   useEffect(() => {
     const container = document.getElementById("puzzle-board");
     if (!container) return;
@@ -25,13 +25,36 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) 
 
     // Initialize positions if not set
     if (Object.keys(positions).length === 0) {
-      const newPositions: { [id: number]: { x: number; y: number } } = {};
-      pieces.forEach(piece => {
-        // Generate random position, keeping pieces within board boundaries
-        const x = Math.random() * (width - piece.width);
-        const y = Math.random() * (height - piece.height);
-        onPieceMove(piece.id, x, y);
-        newPositions[piece.id] = { x, y };
+      const padding = 20; // Padding from edges
+      const spacing = 10; // Space between pieces
+      
+      // Calculate total width and height of all pieces
+      const totalPieceWidth = pieces.reduce((acc, piece) => acc + piece.width, 0);
+      const avgPieceWidth = totalPieceWidth / pieces.length;
+      const avgPieceHeight = pieces[0]?.height || 0;
+
+      // Calculate how many pieces we can fit per row
+      const piecesPerRow = Math.ceil(Math.sqrt(pieces.length));
+      
+      // Calculate the starting position to center the grid
+      const gridWidth = (avgPieceWidth + spacing) * piecesPerRow - spacing;
+      const gridHeight = (avgPieceHeight + spacing) * Math.ceil(pieces.length / piecesPerRow) - spacing;
+      
+      const startX = (width - gridWidth) / 2;
+      const startY = (height - gridHeight) / 3; // Position grid in upper third
+
+      pieces.forEach((piece, index) => {
+        const row = Math.floor(index / piecesPerRow);
+        const col = index % piecesPerRow;
+        
+        const x = startX + (col * (avgPieceWidth + spacing));
+        const y = startY + (row * (avgPieceHeight + spacing));
+        
+        // Ensure pieces stay within boundaries
+        const boundedX = Math.max(padding, Math.min(width - piece.width - padding, x));
+        const boundedY = Math.max(padding, Math.min(height - piece.height - padding, y));
+        
+        onPieceMove(piece.id, boundedX, boundedY);
       });
     }
   }, [pieces, positions, onPieceMove]);
@@ -51,7 +74,7 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) 
   return (
     <div 
       id="puzzle-board"
-      className="relative w-full h-screen bg-gray-900"
+      className="relative w-full h-[calc(100vh-8rem)] bg-gray-900 border border-gray-800 rounded-lg"
     >
       {pieces.map(piece => (
         <DraggablePiece
