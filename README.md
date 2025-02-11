@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Puzzle Game
 
-## Getting Started
+A modern, interactive puzzle game where you can create and solve custom puzzles from your own images.
 
-First, run the development server:
+[Add screenshot of game interface]
+
+## 🎮 [Play Now](https://puzzle-game.vercel.app)
+
+## ✨ Features
+
+- Upload any image and draw custom puzzle pieces
+- Drag and drop pieces to solve puzzles
+- Progress tracking with moves counter
+- Responsive design with touch support
+- Sound effects and animations
+- Local storage for offline play
+- Pixel art inspired UI
+
+## 🛠️ Built with
+
+- [Next.js](https://nextjs.org/) - React framework
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Framer Motion](https://www.framer.com/motion/) - Animations
+- [React DnD](https://react-dnd.github.io/react-dnd/) - Drag and drop
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+
+## 🚀 Quick Start
 
 ```bash
+# Clone repository
+git clone https://github.com/michaelmichaeli/drag.git
+
+# Install dependencies
+cd drag
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 How to Play
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Create a Puzzle**
+   - Click "Create New Puzzle"
+   - Upload an image
+   - Draw lines to create pieces
+   - Save your puzzle
 
-## Learn More
+2. **Solve Puzzles**
+   - Select a puzzle
+   - Drag pieces from the bottom
+   - Drop them in correct positions
+   - Complete the image to win!
 
-To learn more about Next.js, take a look at the following resources:
+## 📸 Screenshots
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+[Add gameplay screenshots]
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤝 Contributing
 
-## Deploy on Vercel
+Pull requests are welcome! Feel free to contribute to this project.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📄 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
