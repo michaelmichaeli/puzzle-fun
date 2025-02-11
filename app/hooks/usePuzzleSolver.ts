@@ -1,7 +1,15 @@
 import { useState, useCallback } from "react";
 import { PieceData, ConnectedGroup } from "@/types/puzzle";
 
-const CONNECTION_THRESHOLD = 20; // pixels
+const CONNECTION_THRESHOLD = 15; // pixels for edge proximity
+const ALIGNMENT_THRESHOLD = 8; // pixels for edge alignment
+
+// Audio feedback for connections
+const playConnectionSound = () => {
+  const audio = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+NAwAAAAAAAAAAAAFhpbmcAAAAPAAAAAwAAA/YAVlZWVlZWVlZWVlZWVlZWVlZWVlZra2tra2tra2tra2tra2tra2tra4CAgICAgICAgICAgICAgICAgICAgJWVlZWVlZWVlZWVlZWVlZWVlZWVlf///////////////////////////////////////////8XAAAAA//NAxAANgwqQAUYYAP+nRF1MzE7OTk4Sjs5PT05SPs5PTk5OUfjk5OUg7OT85Oj84/nJ+lH46P0o/Sj9H6UeJR4//KPEcUeJR//Eo7/4lHiUf//Eo7/KO/iP//Eo7/8o7/Eo7/w==");
+  audio.volume = 0.2;
+  audio.play();
+};
 
 interface UsePuzzleSolverProps {
   pieces: PieceData[];
@@ -11,53 +19,103 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
   const [connectedGroups, setConnectedGroups] = useState<ConnectedGroup[]>([]);
   const [positions, setPositions] = useState<{ [id: number]: { x: number; y: number } }>({});
 
-  // Find which group a piece belongs to
   const findGroupByPieceId = useCallback((pieceId: number) => {
     return connectedGroups.find(group => group.pieces.includes(pieceId));
   }, [connectedGroups]);
 
-  // Calculate relative positions when pieces connect
-  const calculateRelativePositions = useCallback((
-    mainPieceId: number,
-    connectedPieceId: number,
-    mainPiecePos: { x: number; y: number },
-    connectedPiecePos: { x: number; y: number }
-  ) => {
-    const relativeX = connectedPiecePos.x - mainPiecePos.x;
-    const relativeY = connectedPiecePos.y - mainPiecePos.y;
-    
-    return {
-      [mainPieceId]: { relativeX: 0, relativeY: 0 },
-      [connectedPieceId]: { relativeX, relativeY }
-    };
-  }, []);
-
-  // Check if two pieces should connect
-  const shouldConnect = useCallback((piece1: PieceData, piece2: PieceData): boolean => {
+  const checkAlignment = useCallback((
+    piece1: PieceData,
+    piece2: PieceData,
+    side: 'right' | 'left' | 'top' | 'bottom'
+  ): boolean => {
     const pos1 = positions[piece1.id];
     const pos2 = positions[piece2.id];
     if (!pos1 || !pos2) return false;
 
-    // Check if pieces are next to each other in the original grid
-    const isConnectedInGrid = (
-      piece1.connections.right === piece2.id ||
-      piece1.connections.left === piece2.id ||
-      piece1.connections.top === piece2.id ||
-      piece1.connections.bottom === piece2.id
-    );
-
-    if (!isConnectedInGrid) return false;
-
-    // Calculate distance between pieces
-    const distance = Math.sqrt(
-      Math.pow(pos2.x - pos1.x, 2) +
-      Math.pow(pos2.y - pos1.y, 2)
-    );
-
-    return distance <= CONNECTION_THRESHOLD;
+    switch (side) {
+      case 'right': {
+        const p1Right = pos1.x + piece1.width;
+        const p2Left = pos2.x;
+        return (
+          Math.abs(pos1.y - pos2.y) < ALIGNMENT_THRESHOLD && // Vertical alignment
+          Math.abs(p1Right - p2Left) < CONNECTION_THRESHOLD // Horizontal proximity
+        );
+      }
+      case 'left': {
+        const p1Left = pos1.x;
+        const p2Right = pos2.x + piece2.width;
+        return (
+          Math.abs(pos1.y - pos2.y) < ALIGNMENT_THRESHOLD && // Vertical alignment
+          Math.abs(p1Left - p2Right) < CONNECTION_THRESHOLD // Horizontal proximity
+        );
+      }
+      case 'bottom': {
+        const p1Bottom = pos1.y + piece1.height;
+        const p2Top = pos2.y;
+        return (
+          Math.abs(pos1.x - pos2.x) < ALIGNMENT_THRESHOLD && // Horizontal alignment
+          Math.abs(p1Bottom - p2Top) < CONNECTION_THRESHOLD // Vertical proximity
+        );
+      }
+      case 'top': {
+        const p1Top = pos1.y;
+        const p2Bottom = pos2.y + piece2.height;
+        return (
+          Math.abs(pos1.x - pos2.x) < ALIGNMENT_THRESHOLD && // Horizontal alignment
+          Math.abs(p1Top - p2Bottom) < CONNECTION_THRESHOLD // Vertical proximity
+        );
+      }
+    }
   }, [positions]);
 
-  // Merge two groups into one
+  const getSnapPosition = useCallback((
+    piece1: PieceData,
+    piece2: PieceData,
+    side: 'right' | 'left' | 'top' | 'bottom'
+  ): { x: number; y: number } => {
+    const pos1 = positions[piece1.id];
+
+    switch (side) {
+      case 'right':
+        return {
+          x: pos1.x + piece1.width,
+          y: pos1.y
+        };
+      case 'left':
+        return {
+          x: pos1.x - piece2.width,
+          y: pos1.y
+        };
+      case 'bottom':
+        return {
+          x: pos1.x,
+          y: pos1.y + piece1.height
+        };
+      case 'top':
+        return {
+          x: pos1.x,
+          y: pos1.y - piece2.height
+        };
+    }
+  }, [positions]);
+
+  const shouldConnect = useCallback((piece1: PieceData, piece2: PieceData): [boolean, 'right' | 'left' | 'top' | 'bottom' | null] => {
+    // Check each possible connection
+    if (piece1.connections.right === piece2.id && checkAlignment(piece1, piece2, 'right')) {
+      return [true, 'right'];
+    }
+    if (piece1.connections.left === piece2.id && checkAlignment(piece1, piece2, 'left')) {
+      return [true, 'left'];
+    }
+    if (piece1.connections.bottom === piece2.id && checkAlignment(piece1, piece2, 'bottom')) {
+      return [true, 'bottom'];
+    }
+    if (piece1.connections.top === piece2.id && checkAlignment(piece1, piece2, 'top')) {
+      return [true, 'top'];
+    }
+    return [false, null];
+  }, [checkAlignment]);
+
   const mergeGroups = useCallback((group1: ConnectedGroup, group2: ConnectedGroup, mainPieceId: number) => {
     const mainPiecePos = positions[mainPieceId];
     const newPositions = { ...group1.positions };
@@ -78,7 +136,6 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
     };
   }, [positions]);
 
-  // Handle piece movement
   const onPieceMove = useCallback((pieceId: number, x: number, y: number) => {
     // Update piece position
     setPositions(prev => ({
@@ -110,17 +167,50 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
     }
 
     // Check for new connections
+    const currentPiece = pieces.find(p => p.id === pieceId);
+    if (!currentPiece) return;
+
     pieces.forEach(otherPiece => {
       if (otherPiece.id === pieceId) return;
 
-      if (shouldConnect(pieces[pieceId], otherPiece)) {
+      const [shouldConnectPieces, connectionSide] = shouldConnect(currentPiece, otherPiece);
+      if (shouldConnectPieces && connectionSide) {
+        // Play sound effect
+        playConnectionSound();
         const otherGroup = findGroupByPieceId(otherPiece.id);
+        const snapPosition = getSnapPosition(currentPiece, otherPiece, connectionSide);
+
+        // Snap the piece or group to the correct position
+        setPositions(prev => {
+          const newPositions = { ...prev };
+          if (currentGroup) {
+            // Move entire group to align with snap position
+            const deltaX = snapPosition.x - positions[pieceId].x;
+            const deltaY = snapPosition.y - positions[pieceId].y;
+            currentGroup.pieces.forEach(groupPieceId => {
+              const pos = prev[groupPieceId];
+              newPositions[groupPieceId] = {
+                x: pos.x + deltaX,
+                y: pos.y + deltaY
+              };
+            });
+          } else {
+            newPositions[pieceId] = snapPosition;
+          }
+          return newPositions;
+        });
         
         // Both pieces are unconnected
         if (!currentGroup && !otherGroup) {
           setConnectedGroups(prev => [...prev, {
             pieces: [pieceId, otherPiece.id],
-            positions: calculateRelativePositions(pieceId, otherPiece.id, { x, y }, positions[otherPiece.id])
+            positions: {
+              [pieceId]: { relativeX: 0, relativeY: 0 },
+              [otherPiece.id]: {
+                relativeX: positions[otherPiece.id].x - snapPosition.x,
+                relativeY: positions[otherPiece.id].y - snapPosition.y
+              }
+            }
           }]);
         }
         // Current piece is unconnected but other piece is in a group
@@ -131,12 +221,10 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
                   pieces: [...group.pieces, pieceId],
                   positions: {
                     ...group.positions,
-                    [pieceId]: calculateRelativePositions(
-                      otherPiece.id,
-                      pieceId,
-                      positions[otherPiece.id],
-                      { x, y }
-                    )[pieceId]
+                    [pieceId]: {
+                      relativeX: snapPosition.x - positions[otherPiece.id].x,
+                      relativeY: snapPosition.y - positions[otherPiece.id].y
+                    }
                   }
                 }
               : group
@@ -151,16 +239,14 @@ export const usePuzzleSolver = ({ pieces }: UsePuzzleSolverProps) => {
         }
       }
     });
-  }, [pieces, positions, connectedGroups, findGroupByPieceId, shouldConnect, calculateRelativePositions, mergeGroups]);
+  }, [pieces, positions, connectedGroups, findGroupByPieceId, shouldConnect, getSnapPosition, mergeGroups]);
 
-  // Check if puzzle is solved
   const isSolved = useCallback(() => {
     if (connectedGroups.length !== 1) return false;
     
     const group = connectedGroups[0];
     if (group.pieces.length !== pieces.length) return false;
 
-    // All pieces are in one group, puzzle is solved!
     return true;
   }, [connectedGroups, pieces]);
 

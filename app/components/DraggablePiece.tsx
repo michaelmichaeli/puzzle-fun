@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useRef, useEffect } from "react";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { PieceData } from "@/types/puzzle";
@@ -17,6 +18,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   isPartOfGroup
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dragRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -41,21 +43,33 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
       position={position}
       onDrag={handleDrag}
       bounds="parent"
+      nodeRef={dragRef}
     >
-      <canvas
-        ref={canvasRef}
-        width={piece.width}
-        height={piece.height}
-        className={`absolute cursor-grab hover:z-10 ${
-          isPartOfGroup ? "shadow-lg" : ""
+      <div
+        ref={dragRef}
+        className={`absolute transition-transform duration-150 ease-out ${
+          isPartOfGroup ? "z-20" : "z-10 hover:z-20"
         }`}
-        style={{
-          width: piece.width,
-          height: piece.height,
-          border: isPartOfGroup ? "2px solid #4CAF50" : "1px solid rgba(255,255,255,0.2)",
-          transition: "border 0.3s ease"
-        }}
-      />
+      >
+        <div
+          className={`relative transition-all duration-200 ${
+            isPartOfGroup 
+              ? "scale-[1.001] shadow-lg ring-2 ring-green-500" 
+              : "hover:scale-[1.02] hover:shadow-xl"
+          }`}
+        >
+          <canvas
+            ref={canvasRef}
+            width={piece.width}
+            height={piece.height}
+            className="cursor-grab active:cursor-grabbing touch-none"
+            style={{
+              width: piece.width,
+              height: piece.height,
+            }}
+          />
+        </div>
+      </div>
     </Draggable>
   );
 };
