@@ -1,16 +1,13 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
-import { PieceData } from "@/types/puzzle";
+import { PieceData, PiecePosition } from "@/types/puzzle";
 
 interface DraggablePieceProps {
   piece: PieceData;
   width: number;
   height: number;
-  initialPosition: {
-    x: number;
-    y: number;
-  };
+  position: PiecePosition;
   isPlaced?: boolean;
   onDragStop: (e: DraggableEvent, data: DraggableData, piece: PieceData) => void;
 }
@@ -18,8 +15,8 @@ interface DraggablePieceProps {
 export default function DraggablePiece({ 
   piece, 
   width, 
-  height, 
-  initialPosition,
+  height,
+  position,
   isPlaced = false,
   onDragStop
 }: DraggablePieceProps) {
@@ -32,7 +29,7 @@ export default function DraggablePiece({
   return (
     <Draggable
       nodeRef={nodeRef}
-      defaultPosition={initialPosition}
+      position={position}
       onStop={handleDragStop}
       disabled={isPlaced}
     >

@@ -3,13 +3,20 @@ export interface PieceData {
   imageSrc: string;
   x: number;  // Original position X where piece was cut from
   y: number;  // Original position Y where piece was cut from
-  xRatio: number;  // Position ratio relative to original image width
-  yRatio: number;  // Position ratio relative to original image height
   width: number;
   height: number;
-  widthRatio: number;  // For piece sizing
-  heightRatio: number; // For piece sizing
+  widthRatio: number;  // For piece sizing only
+  heightRatio: number; // For piece sizing only
   shapePath: number[];
+}
+
+export interface PiecePosition {
+  x: number;
+  y: number;
+}
+
+export interface PiecePositions {
+  [pieceId: number]: PiecePosition;
 }
 
 export interface Puzzle {
@@ -18,4 +25,6 @@ export interface Puzzle {
   createdAt: string;
   holedImage: string;
   pieces: PieceData[];
+  originalWidth: number;  // Store original image dimensions for correct scaling
+  originalHeight: number;
 }

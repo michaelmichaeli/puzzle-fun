@@ -17,14 +17,12 @@ interface LineData {
 interface PieceData {
   id: number;
   imageSrc: string;
-  x: number;  // Original position X where piece was cut from
-  y: number;  // Original position Y where piece was cut from
-  xRatio: number;  // Position ratio relative to original image width
-  yRatio: number;  // Position ratio relative to original image height
+  x: number;  // Original position X where piece was cut from (in original image coordinates)
+  y: number;  // Original position Y where piece was cut from (in original image coordinates)
   width: number;
   height: number;
-  widthRatio: number;  // For piece sizing
-  heightRatio: number; // For piece sizing
+  widthRatio: number;  // For piece sizing only
+  heightRatio: number; // For piece sizing only
   shapePath: number[];
 }
 
@@ -34,55 +32,60 @@ interface PuzzleData {
   createdAt: string;
   holedImage: string;
   pieces: PieceData[];
+  originalWidth: number;
+  originalHeight: number;
 }
 
 const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
+  const router = useRouter();
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [canvasImage, setCanvasImage] = useState<HTMLImageElement | null>(null);
   const [lines, setLines] = useState<LineData[]>([]);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   const [cutShapes, setCutShapes] = useState<LineData[]>([]);
   const [pieces, setPieces] = useState<PieceData[]>([]);
-  const [scaleFactors, setScaleFactors] = useState({ x: 1, y: 1 });
   const stageRef = useRef<Konva.Stage>(null);
   const pieceIdRef = useRef<number>(0);
-  const router = useRouter();
 
   useEffect(() => {
     const img = new window.Image();
     img.src = imageUrl;
     img.crossOrigin = "Anonymous";
     img.onload = () => {
-      const dimensions = calculateImageDimensions(img.width, img.height);
-      
       setImage(img);
       setCanvasImage(img);
-      setScaleFactors(dimensions.scaleFactors);
     };
   }, [imageUrl]);
 
-  const scalePoints = (points: number[]) => {
-    return points.map((value, index) => 
-      index % 2 === 0 ? value / scaleFactors.x : value / scaleFactors.y
-    );
-  };
-
+  // We don't scale points anymore, store original coordinates
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     setIsDrawing(true);
-    const pos = e.target.getStage()?.getPointerPosition();
-    if (!pos) return;
-    setLines([...lines, { points: [pos.x, pos.y] }]);
+    const stage = e.target.getStage();
+    const pos = stage?.getPointerPosition();
+    if (!pos || !stage) return;
+
+    // Convert to original image coordinates
+    const scale = stage.width() / (image?.width || 1);
+    const originalX = pos.x / scale;
+    const originalY = pos.y / scale;
+    
+    setLines([...lines, { points: [originalX, originalY] }]);
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!isDrawing) return;
     const stage = e.target.getStage();
     const point = stage?.getPointerPosition();
-    if (!point) return;
+    if (!point || !stage) return;
+
+    // Convert to original image coordinates
+    const scale = stage.width() / (image?.width || 1);
+    const originalX = point.x / scale;
+    const originalY = point.y / scale;
     
     setLines((prevLines) => {
       const lastLine = prevLines[prevLines.length - 1];
-      lastLine.points = [...lastLine.points, point.x, point.y];
+      lastLine.points = [...lastLine.points, originalX, originalY];
       return [...prevLines.slice(0, -1), lastLine];
     });
   };
@@ -109,14 +112,14 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     ctx.globalCompositeOperation = "destination-out";
     ctx.fillStyle = "rgba(0,0,0,1)";
 
+    // The points are already in original coordinates
     allCuts.forEach((line) => {
       ctx.beginPath();
-      const scaledPoints = scalePoints(line.points);
-      if (scaledPoints.length < 4) return;
+      if (line.points.length < 4) return;
       
-      ctx.moveTo(scaledPoints[0], scaledPoints[1]);
-      for (let i = 2; i < scaledPoints.length; i += 2) {
-        ctx.lineTo(scaledPoints[i], scaledPoints[i + 1]);
+      ctx.moveTo(line.points[0], line.points[1]);
+      for (let i = 2; i < line.points.length; i += 2) {
+        ctx.lineTo(line.points[i], line.points[i + 1]);
       }
       ctx.closePath();
       ctx.fill();
@@ -130,6 +133,74 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     };
 
     savePiece(lines);
+  };
+
+  const savePiece = (lines: LineData[]) => {
+    if (!image) return;
+
+    const points = lines.flatMap(l => l.points); // Points are already in original coordinates
+    const bounds = getBoundingBox(points);
+
+    const pieceCanvas = document.createElement("canvas");
+    pieceCanvas.width = bounds.width;
+    pieceCanvas.height = bounds.height;
+
+    const pieceCtx = pieceCanvas.getContext("2d");
+    if (!pieceCtx) return;
+
+    pieceCtx.clearRect(0, 0, bounds.width, bounds.height);
+
+    pieceCtx.drawImage(
+      image,
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      0,
+      0,
+      bounds.width,
+      bounds.height
+    );
+
+    pieceCtx.globalCompositeOperation = "destination-in";
+    pieceCtx.fillStyle = "rgba(0,0,0,1)";
+
+    lines.forEach((line) => {
+      pieceCtx.beginPath();
+      const adjustedPoints = line.points.map((point, index) =>
+        index % 2 === 0 ? point - bounds.x : point - bounds.y
+      );
+      
+      if (adjustedPoints.length < 4) return;
+      pieceCtx.moveTo(adjustedPoints[0], adjustedPoints[1]);
+      for (let i = 2; i < adjustedPoints.length; i += 2) {
+        pieceCtx.lineTo(adjustedPoints[i], adjustedPoints[i + 1]);
+      }
+      pieceCtx.closePath();
+      pieceCtx.fill();
+    });
+
+    // Scale down large pieces
+    const finalCanvas = scaleDownCanvas(pieceCanvas, MAX_PIECE_SIZE);
+
+    const pieceImage = new window.Image();
+    // Need PNG here to preserve transparency
+    pieceImage.src = finalCanvas.toDataURL("image/png", COMPRESSION_QUALITY);
+
+    // Store original coordinates
+    const newPiece: PieceData = {
+      id: pieceIdRef.current++,
+      imageSrc: pieceImage.src,
+      x: bounds.x,  // Original x in image coordinates
+      y: bounds.y,  // Original y in image coordinates
+      width: bounds.width,
+      height: bounds.height,
+      widthRatio: bounds.width / image.width,
+      heightRatio: bounds.height / image.height,
+      shapePath: points,  // Original points
+    };
+
+    setPieces((prev) => [...prev, newPiece]);
   };
 
   const scaleDownCanvas = (canvas: HTMLCanvasElement, maxSize: number): HTMLCanvasElement => {
@@ -161,76 +232,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     }
 
     return scaledCanvas;
-  };
-
-  const savePiece = (lines: LineData[]) => {
-    if (!image) return;
-
-    const scaledPoints = lines.flatMap(l => scalePoints(l.points));
-    const bounds = getBoundingBox(scaledPoints);
-
-    const pieceCanvas = document.createElement("canvas");
-    pieceCanvas.width = bounds.width;
-    pieceCanvas.height = bounds.height;
-
-    const pieceCtx = pieceCanvas.getContext("2d");
-    if (!pieceCtx) return;
-
-    pieceCtx.clearRect(0, 0, bounds.width, bounds.height);
-
-    pieceCtx.drawImage(
-      image,
-      bounds.x,
-      bounds.y,
-      bounds.width,
-      bounds.height,
-      0,
-      0,
-      bounds.width,
-      bounds.height
-    );
-
-    pieceCtx.globalCompositeOperation = "destination-in";
-    pieceCtx.fillStyle = "rgba(0,0,0,1)";
-
-    lines.forEach((line) => {
-      pieceCtx.beginPath();
-      const scaledPoints = scalePoints(line.points);
-      const adjustedPoints = scaledPoints.map((point, index) =>
-        index % 2 === 0 ? point - bounds.x : point - bounds.y
-      );
-      
-      if (adjustedPoints.length < 4) return;
-      pieceCtx.moveTo(adjustedPoints[0], adjustedPoints[1]);
-      for (let i = 2; i < adjustedPoints.length; i += 2) {
-        pieceCtx.lineTo(adjustedPoints[i], adjustedPoints[i + 1]);
-      }
-      pieceCtx.closePath();
-      pieceCtx.fill();
-    });
-
-    // Scale down large pieces
-    const finalCanvas = scaleDownCanvas(pieceCanvas, MAX_PIECE_SIZE);
-
-    const pieceImage = new window.Image();
-    // Need PNG here to preserve transparency
-    pieceImage.src = finalCanvas.toDataURL("image/png", COMPRESSION_QUALITY);
-
-    const newPiece: PieceData = {
-      id: pieceIdRef.current++,
-      imageSrc: pieceImage.src,
-      x: bounds.x,  // Store original coordinates for reference
-      y: bounds.y,
-      xRatio: bounds.x / image.width,  // Store position as ratios
-      yRatio: bounds.y / image.height,
-      width: bounds.width,
-      height: bounds.height,
-      widthRatio: bounds.width / image.width,
-      heightRatio: bounds.height / image.height,
-      shapePath: scaledPoints,
-    };
-
-    setPieces((prev) => [...prev, newPiece]);
   };
 
   const compressImage = (source: HTMLCanvasElement | HTMLImageElement, quality: number): string => {
@@ -300,6 +301,8 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       createdAt: new Date().toISOString(),
       holedImage: compressedHoledImage,
       pieces,
+      originalWidth: image.width,
+      originalHeight: image.height
     };
 
     const existingPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
@@ -310,12 +313,16 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     router.push(`/puzzle/play/${puzzleId}`);
   };
 
+  const displayDimensions = image 
+    ? calculateImageDimensions(image.width, image.height)
+    : { width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT };
+
   return (
     <div>
       <Stage
         ref={stageRef}
-            width={image ? calculateImageDimensions(image.width, image.height).width : DISPLAY_WIDTH}
-            height={image ? calculateImageDimensions(image.width, image.height).height : DISPLAY_HEIGHT}
+        width={displayDimensions.width}
+        height={displayDimensions.height}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -324,13 +331,18 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
           {canvasImage && (
             <Image
               image={canvasImage}
-              width={image ? calculateImageDimensions(image.width, image.height).width : DISPLAY_WIDTH}
-              height={image ? calculateImageDimensions(image.width, image.height).height : DISPLAY_HEIGHT}
+              width={displayDimensions.width}
+              height={displayDimensions.height}
             />
           )}
-          {lines.map((line, i) => (
-            <Line key={i} points={line.points} stroke="red" strokeWidth={2} />
-          ))}
+          {lines.map((line, i) => {
+            // Convert points back to display scale for drawing
+            const scale = displayDimensions.width / (image?.width || 1);
+            const scaledPoints = line.points.map((point, index) => point * scale);
+            return (
+              <Line key={i} points={scaledPoints} stroke="red" strokeWidth={2} />
+            );
+          })}
         </Layer>
       </Stage>
 

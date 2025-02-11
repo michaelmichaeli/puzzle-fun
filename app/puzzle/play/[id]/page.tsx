@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Stage, Layer, Image as KonvaImage } from "react-konva";
-import { PieceData, Puzzle } from "@/types/puzzle";
+import { Puzzle, PiecePositions } from "@/types/puzzle";
 import DraggablePiece from "@/app/components/DraggablePiece";
 import BackButton from "@/app/components/BackButton";
 import { DISPLAY_WIDTH, DISPLAY_HEIGHT, calculateImageDimensions, PIECE_PLACEMENT_THRESHOLD } from "@/app/constants/dimensions";
@@ -16,6 +16,9 @@ const PuzzlePlayPage = () => {
   const [holedImage, setHoledImage] = useState<HTMLImageElement | null>(null);
   const [imageDimensions, setImageDimensions] = useState({ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT });
   const [placedPieces, setPlacedPieces] = useState<Set<number>>(new Set());
+  const [piecePositions, setPiecePositions] = useState<PiecePositions>({});
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [currentPieceCenter, setCurrentPieceCenter] = useState<{x: number, y: number} | null>(null);
 
   useEffect(() => {
     const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
@@ -30,47 +33,84 @@ const PuzzlePlayPage = () => {
         const dimensions = calculateImageDimensions(img.width, img.height);
         setImageDimensions(dimensions);
         setHoledImage(img);
+
+        // Load saved piece positions if they exist
+        const savedPositions = JSON.parse(localStorage.getItem(`piece_positions_${id}`) || "{}");
+        setPiecePositions(savedPositions);
+        setHasLoaded(true);
       };
     }
   }, [id]);
 
-  const handlePieceDragStop = (event: DraggableEvent, data: DraggableData, piece: PieceData) => {
-    if (placedPieces.has(piece.id)) return;
+  // Save positions whenever they change
+  useEffect(() => {
+    if (hasLoaded && Object.keys(piecePositions).length > 0) {
+      localStorage.setItem(`piece_positions_${id}`, JSON.stringify(piecePositions));
+    }
+  }, [piecePositions, id, hasLoaded]);
 
-    if (!holedImage) return;
+  const handlePieceDragStop = (e: DraggableEvent, data: DraggableData, piece: Puzzle["pieces"][0]) => {
+    if (!puzzle || !holedImage || placedPieces.has(piece.id)) return;
 
-    // Get the dragged element's bounding rect for its absolute position
+    // Update the piece's position based on the drag
+    setPiecePositions(prev => ({
+      ...prev,
+      [piece.id]: { x: data.x, y: data.y }
+    }));
+
+    // Get absolute positions for position checking
     const node = data.node as HTMLElement;
     const pieceRect = node.getBoundingClientRect();
     const boardRect = boardRef.current?.getBoundingClientRect();
     if (!boardRect) return;
 
-    // Calculate center point of the piece relative to the board
+    // Calculate scaled piece dimensions
+    const scale = imageDimensions.width / puzzle.originalWidth;
     const pieceWidth = piece.widthRatio * imageDimensions.width;
     const pieceHeight = piece.heightRatio * imageDimensions.height;
+
+    // Get center position relative to board
     const currentX = pieceRect.left - boardRect.left + (pieceWidth / 2);
     const currentY = pieceRect.top - boardRect.top + (pieceHeight / 2);
-    console.log("🚀 ~ handlePieceDragStop ~ piece center position:", currentX, currentY);
 
-    // Get target position based on ratios
-    const targetX = piece.xRatio * imageDimensions.width;
-    const targetY = piece.yRatio * imageDimensions.height;
-    console.log("🚀 ~ handlePieceDragStop ~ target position:", targetX, targetY);
+    // Convert screen coordinates to original image coordinates
+    const originalCurrentX = currentX / scale;
+    const originalCurrentY = currentY / scale;
 
+    // Get target center coordinates in original image space
+    const originalTargetX = piece.x + (piece.width / 2);
+    const originalTargetY = piece.y + (piece.height / 2);
+
+    // Compare in original image coordinates
     const distance = Math.sqrt(
-      Math.pow(currentX - targetX, 2) + 
-      Math.pow(currentY - targetY, 2)
+      Math.pow(originalCurrentX - originalTargetX, 2) + 
+      Math.pow(originalCurrentY - originalTargetY, 2)
     );
-    console.log("🚀 ~ handlePieceDragStop ~ distance:", distance)
 
-    if (distance <= PIECE_PLACEMENT_THRESHOLD) {
+    // Scale threshold by the same factor
+    const scaledThreshold = PIECE_PLACEMENT_THRESHOLD / scale;
+
+    if (distance <= scaledThreshold) {
       setPlacedPieces(prev => {
         const newSet = new Set(prev);
         newSet.add(piece.id);
         return newSet;
       });
+
+      // Set to exact target position when placed
+      setPiecePositions(prev => ({
+        ...prev,
+        [piece.id]: { 
+          x: originalTargetX * scale - pieceWidth / 2,
+          y: originalTargetY * scale - pieceHeight / 2
+        }
+      }));
+
+      setCurrentPieceCenter(null); // Clear debug marker when piece is placed
     }
   };
+
+  if (!hasLoaded) return <h2>Loading puzzle...</h2>;
 
   return (
     <div style={{ 
@@ -121,7 +161,6 @@ const PuzzlePlayPage = () => {
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
               }}
             >
-
               <Stage 
                 width={imageDimensions.width} 
                 height={imageDimensions.height} 
@@ -140,68 +179,37 @@ const PuzzlePlayPage = () => {
                     width={imageDimensions.width} 
                     height={imageDimensions.height} 
                   />
-                  </Layer>
-
+                </Layer>
               </Stage>
-                  {puzzle.pieces.map((piece) => {
-                const targetX = piece.xRatio * imageDimensions.width;
-                const targetY = piece.yRatio * imageDimensions.height;
-                const rawX = piece.x * (imageDimensions.width / holedImage.width);
-                const rawY = piece.y * (imageDimensions.height / holedImage.height);
-                return (
-                  <>
-                    {/* Target position (ratio-based) */}
-                    <div
-                      key={`target-${piece.id}`}
-                      style={{
-                        position: "absolute",
-                        left: targetX - 1,
-                        top: targetY - 1,
-                        width: "20px",
-                        height: "20px",
-                        backgroundColor: "red",
-                        zIndex: 10,
-                        borderRadius: "50%"
-                      }}
-                    />
-                    {/* Original position (pixel-based, scaled) */}
-                    <div
-                      key={`raw-${piece.id}`}
-                      style={{
-                        position: "absolute",
-                        left: rawX - 1,
-                        top: rawY - 1,
-                        width: "20px",
-                        height: "20px",
-                        backgroundColor: "blue",
-                        zIndex: 10,
-                        borderRadius: "50%"
-                      }}
-                    />
-                  </>
-                );
-              })}
             </div>
 
             {puzzle.pieces.map((piece) => {
               const pieceWidth = piece.widthRatio * imageDimensions.width;
               const pieceHeight = piece.heightRatio * imageDimensions.height;
               
-              // Randomly choose left or right side
-              const isLeftSide = Math.random() < 0.5;
-              
-              // Calculate X position with controlled spacing
-              const sideOffset = imageDimensions.width * 0.3;
-              const randomSpread = imageDimensions.width * 0.15;
-              
-              const randomX = isLeftSide 
-                ? -sideOffset + (Math.random() * randomSpread)
-                : imageDimensions.width + (Math.random() * randomSpread);
-              
-              // Calculate Y position with better vertical distribution
-              const section = Math.floor(Math.random() * 4);
-              const sectionHeight = imageDimensions.height / 4;
-              const randomY = (section * sectionHeight) + (Math.random() * sectionHeight - pieceHeight/2);
+              // Get saved position or generate random one
+              const position = piecePositions[piece.id] || (() => {
+                const isLeftSide = Math.random() < 0.5;
+                const sideOffset = imageDimensions.width * 0.3;
+                const randomSpread = imageDimensions.width * 0.15;
+                const section = Math.floor(Math.random() * 4);
+                const sectionHeight = imageDimensions.height / 4;
+                
+                const randomPosition = {
+                  x: isLeftSide 
+                    ? -sideOffset + (Math.random() * randomSpread)
+                    : imageDimensions.width + (Math.random() * randomSpread),
+                  y: (section * sectionHeight) + (Math.random() * sectionHeight - pieceHeight/2)
+                };
+
+                // Save initial random position
+                setPiecePositions(prev => ({
+                  ...prev,
+                  [piece.id]: randomPosition
+                }));
+
+                return randomPosition;
+              })();
 
               return (
                 <DraggablePiece
@@ -209,20 +217,15 @@ const PuzzlePlayPage = () => {
                   piece={piece}
                   width={pieceWidth}
                   height={pieceHeight}
-                  initialPosition={{ x: randomX, y: randomY }}
+                  position={position}
                   onDragStop={handlePieceDragStop}
                   isPlaced={placedPieces.has(piece.id)}
                 />
               );
             })}
-              
-              
-
           </div>
         </>
-      ) : (
-        <h2>Loading puzzle...</h2>
-      )}
+      ) : null}
       </div>
     </div>
   );
