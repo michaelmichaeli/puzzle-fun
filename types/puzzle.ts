@@ -1,8 +1,10 @@
 export interface PieceData {
   id: number;
   imageSrc: string;
-  x: number;  // Target position X where piece was cut from
-  y: number;  // Target position Y where piece was cut from
+  x: number;  // Original position X where piece was cut from
+  y: number;  // Original position Y where piece was cut from
+  xRatio: number;  // Position ratio relative to original image width
+  yRatio: number;  // Position ratio relative to original image height
   width: number;
   height: number;
   widthRatio: number;  // For piece sizing

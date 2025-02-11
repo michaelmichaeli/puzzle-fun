@@ -17,8 +17,10 @@ interface LineData {
 interface PieceData {
   id: number;
   imageSrc: string;
-  x: number;  // Target position X where piece was cut from
-  y: number;  // Target position Y where piece was cut from
+  x: number;  // Original position X where piece was cut from
+  y: number;  // Original position Y where piece was cut from
+  xRatio: number;  // Position ratio relative to original image width
+  yRatio: number;  // Position ratio relative to original image height
   width: number;
   height: number;
   widthRatio: number;  // For piece sizing
@@ -217,8 +219,10 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
     const newPiece: PieceData = {
       id: pieceIdRef.current++,
       imageSrc: pieceImage.src,
-      x: bounds.x,
+      x: bounds.x,  // Store original coordinates for reference
       y: bounds.y,
+      xRatio: bounds.x / image.width,  // Store position as ratios
+      yRatio: bounds.y / image.height,
       width: bounds.width,
       height: bounds.height,
       widthRatio: bounds.width / image.width,

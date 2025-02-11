@@ -1,8 +1,7 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
-import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
+import Draggable, { DraggableEvent, DraggableData } from "react-draggable";
 import { PieceData } from "@/types/puzzle";
-import { PIECE_PLACEMENT_THRESHOLD } from "@/app/constants/dimensions";
 
 interface DraggablePieceProps {
   piece: PieceData;
@@ -12,7 +11,8 @@ interface DraggablePieceProps {
     x: number;
     y: number;
   };
-  onCorrectPlacement?: (pieceId: number) => void;
+  isPlaced?: boolean;
+  onDragStop: (e: DraggableEvent, data: DraggableData, piece: PieceData) => void;
 }
 
 export default function DraggablePiece({ 
@@ -20,22 +20,13 @@ export default function DraggablePiece({
   width, 
   height, 
   initialPosition,
-  onCorrectPlacement 
+  isPlaced = false,
+  onDragStop
 }: DraggablePieceProps) {
   const nodeRef = useRef(null);
-  const [placed, setPlaced] = useState(false);
 
-  const handleDragStop = (_e: DraggableEvent, data: DraggableData) => {
-    const distance = Math.sqrt(
-      Math.pow(data.x - piece.x, 2) + 
-      Math.pow(data.y - piece.y, 2)
-    );
-    console.log("🚀 ~ handleDragStop ~ distance:", distance)
-
-    if (distance <= PIECE_PLACEMENT_THRESHOLD && !placed) {
-      setPlaced(true);
-      onCorrectPlacement?.(piece.id);
-    }
+  const handleDragStop = (e: DraggableEvent, data: DraggableData) => {
+    onDragStop(e, data, piece);
   };
 
   return (
@@ -43,16 +34,16 @@ export default function DraggablePiece({
       nodeRef={nodeRef}
       defaultPosition={initialPosition}
       onStop={handleDragStop}
-      disabled={placed}
+      disabled={isPlaced}
     >
       <div
         ref={nodeRef}
         style={{
           position: "absolute",
-          cursor: placed ? "default" : "grab",
+          cursor: isPlaced ? "default" : "grab",
           width: width,
           height: height,
-          opacity: placed ? 0.8 : 1,
+          opacity: isPlaced ? 0.8 : 1,
           transition: "opacity 0.3s ease",
         }}
       >
