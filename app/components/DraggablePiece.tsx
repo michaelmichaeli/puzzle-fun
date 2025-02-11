@@ -12,14 +12,14 @@ interface DraggablePieceProps {
   onDragStop: (e: DraggableEvent, data: DraggableData, piece: PieceData) => void;
 }
 
-export default function DraggablePiece({ 
+export const DraggablePiece = ({ 
   piece, 
   width, 
   height,
   position,
   isPlaced = false,
   onDragStop
-}: DraggablePieceProps) {
+}: DraggablePieceProps) => {
   const nodeRef = useRef(null);
 
   const handleDragStop = (e: DraggableEvent, data: DraggableData) => {
@@ -35,13 +35,11 @@ export default function DraggablePiece({
     >
       <div
         ref={nodeRef}
+        className={`absolute ${isPlaced ? 'cursor-default' : 'cursor-grab'} transition-opacity`}
         style={{
-          position: "absolute",
-          cursor: isPlaced ? "default" : "grab",
-          width: width,
-          height: height,
+          width,
+          height,
           opacity: isPlaced ? 0.8 : 1,
-          transition: "opacity 0.3s ease",
         }}
       >
         <Image
@@ -49,15 +47,13 @@ export default function DraggablePiece({
           alt={`Piece ${piece.id}`}
           width={width}
           height={height}
-          style={{ 
-            touchAction: "none", // Prevents touch scrolling while dragging
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain"
-          }}
-          draggable={false} // Prevents default HTML5 drag behavior
+          className="touch-none max-w-full max-h-full object-contain select-none"
+          priority
+          draggable={false}
         />
       </div>
     </Draggable>
   );
-}
+};
+
+export default DraggablePiece;

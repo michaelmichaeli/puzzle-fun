@@ -1,27 +1,35 @@
 export const DISPLAY_WIDTH = 800;
 export const DISPLAY_HEIGHT = 600;
-
-// When comparing in original image coordinates, we need a larger threshold
-export const PIECE_PLACEMENT_THRESHOLD = 50; // pixels in original image coordinates
-
+export const PIECE_PLACEMENT_THRESHOLD = 50;
 export const COMPRESSION_QUALITY = 0.8;
+export const MAX_PIECE_SIZE = 512;
 
-export const MAX_PIECE_SIZE = 512; // Maximum pixel size for any piece dimension
+export interface ScaleFactors {
+  x: number;
+  y: number;
+}
 
-export const calculateImageDimensions = (originalWidth: number, originalHeight: number) => {
+export interface ImageDimensions {
+  width: number;
+  height: number;
+  scaleFactors: ScaleFactors;
+}
+
+export const calculateImageDimensions = (
+  originalWidth: number, 
+  originalHeight: number
+): ImageDimensions => {
   const aspectRatio = originalWidth / originalHeight;
   let width = DISPLAY_WIDTH;
   let height = DISPLAY_HEIGHT;
 
   if (width / height > aspectRatio) {
-    // Image is relatively taller
     width = height * aspectRatio;
   } else {
-    // Image is relatively wider
     height = width / aspectRatio;
   }
 
-  const scaleFactors = {
+  const scaleFactors: ScaleFactors = {
     x: width / originalWidth,
     y: height / originalHeight
   };
