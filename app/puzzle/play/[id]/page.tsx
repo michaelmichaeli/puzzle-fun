@@ -30,26 +30,67 @@ const PuzzlePlayPage = () => {
   }, [id]);
 
   return (
-    <div>
+    <div style={{ 
+      position: "relative", 
+      minHeight: "100vh",
+      width: "100%",
+      overflow: "hidden" // Prevent scrollbars
+    }}>
       <BackButton />
-      <div style={{ textAlign: "center", padding: "20px" }}>
+      <div style={{ 
+        textAlign: "center", 
+        padding: "20px",
+        position: "relative",
+        zIndex: 1
+      }}>
         <h1>Puzzle {id}</h1>
 
       {puzzle && holedImage ? (
-        <div style={{ position: "relative", width: IMAGE_WIDTH, height: IMAGE_HEIGHT, margin: "auto" }}>
+        <div style={{
+          position: "relative",
+          width: "100%",
+          height: IMAGE_HEIGHT + 100,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+        }}>
+          <div style={{ 
+            position: "relative",
+            width: IMAGE_WIDTH, 
+            height: IMAGE_HEIGHT,
+            backgroundColor: "#f0f0f0",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+          }}>
           {/* Puzzle Board (Holed Image) */}
           <Stage width={IMAGE_WIDTH} height={IMAGE_HEIGHT} style={{ border: "2px solid black" }}>
             <Layer>
               <KonvaImage image={holedImage} x={0} y={0} width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
             </Layer>
           </Stage>
+          </div>
 
-          {/* Render Draggable Pieces */}
+          {/* Render Draggable Pieces relative to outer container */}
           {puzzle.pieces.map((piece) => {
             const pieceWidth = piece.widthRatio * IMAGE_WIDTH;
             const pieceHeight = piece.heightRatio * IMAGE_HEIGHT;
-            const randomX = Math.random() * (IMAGE_WIDTH - pieceWidth);
-            const randomY = Math.random() * (IMAGE_HEIGHT - pieceHeight + 100) + IMAGE_HEIGHT / 2;
+            
+            // Randomly choose left or right side
+            const isLeftSide = Math.random() < 0.5;
+            
+            // Calculate X position with controlled spacing
+            const sideOffset = 250; // Distance from puzzle edge
+            const randomSpread = 150; // Random spread within the side area
+            
+            const randomX = isLeftSide 
+              ? -sideOffset + (Math.random() * randomSpread)
+              : IMAGE_WIDTH + (Math.random() * randomSpread);
+            
+            // Calculate Y position with better vertical distribution
+            // Divide the height into sections to ensure more even distribution
+            const section = Math.floor(Math.random() * 4); // 4 sections
+            const sectionHeight = IMAGE_HEIGHT / 4;
+            const randomY = (section * sectionHeight) + (Math.random() * sectionHeight - pieceHeight/2);
 
             return (
               <DraggablePiece

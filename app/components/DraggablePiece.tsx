@@ -20,7 +20,6 @@ export default function DraggablePiece({ piece, width, height, initialPosition }
     <Draggable
       nodeRef={nodeRef}
       defaultPosition={initialPosition}
-      bounds="parent"
     >
       <div
         ref={nodeRef}
@@ -38,8 +37,6 @@ export default function DraggablePiece({ piece, width, height, initialPosition }
           height={height}
           style={{ 
             touchAction: "none", // Prevents touch scrolling while dragging
-            width: "auto",
-            height: "auto",
             maxWidth: "100%",
             maxHeight: "100%",
             objectFit: "contain"

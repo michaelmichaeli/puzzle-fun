@@ -3,320 +3,404 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Stage, Layer, Image, Line } from "react-konva";
+import type Konva from "konva";
 
 interface PuzzleEditorProps {
-	imageUrl: string;
+  imageUrl: string;
 }
 
 interface LineData {
-	points: number[];
+  points: number[];
 }
 
 interface PieceData {
-	id: number;
-	imageSrc: string;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	xRatio: number;
-	yRatio: number;
-	widthRatio: number;
-	heightRatio: number;
-	shapePath: number[];
+  id: number;
+  imageSrc: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  xRatio: number;
+  yRatio: number;
+  widthRatio: number;
+  heightRatio: number;
+  shapePath: number[];
 }
 
 interface PuzzleData {
-	id: string;
-	imageUrl: string;
-	createdAt: string;
-	holedImage: string; // ✅ Compressed holed image
-	pieces: PieceData[];
+  id: string;
+  imageUrl: string;
+  createdAt: string;
+  holedImage: string;
+  pieces: PieceData[];
 }
 
-const IMAGE_WIDTH = 800;
-const IMAGE_HEIGHT = 600;
+const DISPLAY_WIDTH = 800;
+const DISPLAY_HEIGHT = 600;
+const MAX_PIECE_SIZE = 300;
+const COMPRESSION_QUALITY = 0.3;
 
 const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
-	const [image, setImage] = useState<HTMLImageElement | null>(null);
-	const [canvasImage, setCanvasImage] = useState<HTMLImageElement | null>(null);
-	const [lines, setLines] = useState<LineData[]>([]);
-	const [isDrawing, setIsDrawing] = useState<boolean>(false);
-	const [cutShapes, setCutShapes] = useState<LineData[]>([]);
-	const [pieces, setPieces] = useState<PieceData[]>([]);
-	const stageRef = useRef<any>(null);
-	const pieceIdRef = useRef<number>(0);
-	const router = useRouter();
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [canvasImage, setCanvasImage] = useState<HTMLImageElement | null>(null);
+  const [lines, setLines] = useState<LineData[]>([]);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [cutShapes, setCutShapes] = useState<LineData[]>([]);
+  const [pieces, setPieces] = useState<PieceData[]>([]);
+  const [scaleFactors, setScaleFactors] = useState({ x: 1, y: 1 });
+  const stageRef = useRef<Konva.Stage>(null);
+  const pieceIdRef = useRef<number>(0);
+  const router = useRouter();
 
-	useEffect(() => {
-		const img = new window.Image();
-		img.src = imageUrl;
-		img.crossOrigin = "Anonymous";
-		img.onload = () => {
-			setImage(img);
-			setCanvasImage(img);
-		};
-	}, [imageUrl]);
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = imageUrl;
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      console.log('Image loaded with dimensions:', {
+        width: img.width,
+        height: img.height,
+        naturalWidth: img.naturalWidth,
+        naturalHeight: img.naturalHeight,
+        displayWidth: DISPLAY_WIDTH,
+        displayHeight: DISPLAY_HEIGHT
+      });
+      
+      setImage(img);
+      setCanvasImage(img);
+      setScaleFactors({
+        x: DISPLAY_WIDTH / img.width,
+        y: DISPLAY_HEIGHT / img.height
+      });
+    };
+  }, [imageUrl]);
 
-	const handleMouseDown = (e: any) => {
-		setIsDrawing(true);
-		const pos = e.target.getStage().getPointerPosition();
-		setLines([...lines, { points: [pos.x, pos.y] }]);
-	};
+  const scalePoints = (points: number[]) => {
+    return points.map((value, index) => 
+      index % 2 === 0 ? value / scaleFactors.x : value / scaleFactors.y
+    );
+  };
 
-	const handleMouseMove = (e: any) => {
-		if (!isDrawing) return;
-		const stage = e.target.getStage();
-		const point = stage.getPointerPosition();
-		setLines((prevLines) => {
-			const lastLine = prevLines[prevLines.length - 1];
-			lastLine.points = [...lastLine.points, point.x, point.y];
-			return [...prevLines.slice(0, -1), lastLine];
-		});
-	};
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    setIsDrawing(true);
+    const pos = e.target.getStage()?.getPointerPosition();
+    if (!pos) return;
+    console.log('Mouse down at:', pos);
+    setLines([...lines, { points: [pos.x, pos.y] }]);
+  };
 
-	const handleMouseUp = () => {
-		setIsDrawing(false);
-		if (image) {
-			setCutShapes([...cutShapes, ...lines]);
-			applyCut([...cutShapes, ...lines]);
-		}
-	};
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!isDrawing) return;
+    const stage = e.target.getStage();
+    const point = stage?.getPointerPosition();
+    if (!point) return;
+    
+    setLines((prevLines) => {
+      const lastLine = prevLines[prevLines.length - 1];
+      lastLine.points = [...lastLine.points, point.x, point.y];
+      return [...prevLines.slice(0, -1), lastLine];
+    });
+  };
 
-	const applyCut = (allCuts: LineData[]) => {
-		if (!image) return;
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+    if (image) {
+      setCutShapes([...cutShapes, ...lines]);
+      applyCut([...cutShapes, ...lines]);
+    }
+  };
 
-		const canvas = document.createElement("canvas");
-		canvas.width = IMAGE_WIDTH;
-		canvas.height = IMAGE_HEIGHT;
-		const ctx = canvas.getContext("2d");
+  const applyCut = (allCuts: LineData[]) => {
+    if (!image) return;
 
-		if (!ctx) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext("2d");
 
-		ctx.drawImage(image, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-		ctx.globalCompositeOperation = "destination-out";
-		ctx.fillStyle = "rgba(0,0,0,1)";
+    if (!ctx) return;
 
-		allCuts.forEach((line) => {
-			ctx.beginPath();
-			const points = line.points;
-			if (points.length < 4) return;
-			ctx.moveTo(points[0], points[1]);
-			for (let i = 2; i < points.length; i += 2) {
-				ctx.lineTo(points[i], points[i + 1]);
-			}
-			ctx.closePath();
-			ctx.fill();
-		});
+    ctx.drawImage(image, 0, 0, image.width, image.height);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0,0,0,1)";
 
-		const newImage = new window.Image();
-		newImage.src = compressImage(canvas, 0.6); // ✅ Compress before saving
-		newImage.onload = () => {
-			setCanvasImage(newImage);
-			setLines([]);
-		};
+    allCuts.forEach((line) => {
+      ctx.beginPath();
+      const scaledPoints = scalePoints(line.points);
+      if (scaledPoints.length < 4) return;
+      
+      ctx.moveTo(scaledPoints[0], scaledPoints[1]);
+      for (let i = 2; i < scaledPoints.length; i += 2) {
+        ctx.lineTo(scaledPoints[i], scaledPoints[i + 1]);
+      }
+      ctx.closePath();
+      ctx.fill();
+    });
 
-		savePiece(lines);
-	};
+    const newImage = new window.Image();
+    newImage.src = canvas.toDataURL("image/jpeg", COMPRESSION_QUALITY);
+    newImage.onload = () => {
+      setCanvasImage(newImage);
+      setLines([]);
+    };
 
-	const savePiece = (lines: LineData[]) => {
-		if (!image) return;
+    savePiece(lines);
+  };
 
-		const bounds = getBoundingBox(lines.flatMap((l) => l.points));
+  const scaleDownCanvas = (canvas: HTMLCanvasElement, maxSize: number): HTMLCanvasElement => {
+    const scale = Math.min(
+      maxSize / canvas.width,
+      maxSize / canvas.height,
+      1 // Don't scale up, only down
+    );
 
-		// ✅ Create a canvas for this specific piece
-		const pieceCanvas = document.createElement("canvas");
-		pieceCanvas.width = bounds.width;
-		pieceCanvas.height = bounds.height;
+    if (scale >= 1) return canvas;
 
-		const pieceCtx = pieceCanvas.getContext("2d");
-		if (!pieceCtx) return;
+    const scaledCanvas = document.createElement("canvas");
+    scaledCanvas.width = canvas.width * scale;
+    scaledCanvas.height = canvas.height * scale;
+    
+    const ctx = scaledCanvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(
+        canvas,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+        0,
+        0,
+        scaledCanvas.width,
+        scaledCanvas.height
+      );
+    }
 
-		// ✅ Ensure the background is transparent
-		pieceCtx.clearRect(0, 0, bounds.width, bounds.height);
+    return scaledCanvas;
+  };
 
-		// ✅ Draw only the selected part of the original image inside the shape
-		pieceCtx.drawImage(
-			image,
-			bounds.x,
-			bounds.y,
-			bounds.width,
-			bounds.height, // ✅ Crop the correct part from the original image
-			0,
-			0,
-			bounds.width,
-			bounds.height // ✅ Make sure it fills the entire new piece canvas
-		);
+  const savePiece = (lines: LineData[]) => {
+    if (!image) return;
 
-		// ✅ Apply a precise mask to extract only the selected piece
-		pieceCtx.globalCompositeOperation = "destination-in";
-		pieceCtx.fillStyle = "rgba(0,0,0,1)";
+    console.log('Original image dimensions:', {
+      width: image.width,
+      height: image.height,
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+      scaleFactors
+    });
 
-		lines.forEach((line) => {
-			pieceCtx.beginPath();
-			// ✅ Adjust shape points so they align within the cropped area
-			const adjustedPoints = line.points.map((point, index) =>
-				index % 2 === 0 ? point - bounds.x : point - bounds.y
-			);
-			if (adjustedPoints.length < 4) return;
-			pieceCtx.moveTo(adjustedPoints[0], adjustedPoints[1]);
-			for (let i = 2; i < adjustedPoints.length; i += 2) {
-				pieceCtx.lineTo(adjustedPoints[i], adjustedPoints[i + 1]);
-			}
-			pieceCtx.closePath();
-			pieceCtx.fill();
-		});
+    console.log('Lines for cutting:', lines);
+    
+    const scaledPoints = lines.flatMap(l => scalePoints(l.points));
+    const bounds = getBoundingBox(scaledPoints);
+    
+    console.log('Calculated bounds for piece:', bounds);
 
-		// ✅ Convert the correctly cropped piece to an image
-		const pieceImage = new window.Image();
-		pieceImage.src = pieceCanvas.toDataURL("image/png"); // ✅ Save as PNG to preserve transparency
+    const pieceCanvas = document.createElement("canvas");
+    pieceCanvas.width = bounds.width;
+    pieceCanvas.height = bounds.height;
 
-		const newPiece: PieceData = {
-			id: pieceIdRef.current++,
-			imageSrc: pieceImage.src, // ✅ Correctly extracted cut-out piece
-			x: bounds.x,
-			y: bounds.y,
-			width: bounds.width,
-			height: bounds.height,
-			xRatio: bounds.x / IMAGE_WIDTH,
-			yRatio: bounds.y / IMAGE_HEIGHT,
-			widthRatio: bounds.width / IMAGE_WIDTH,
-			heightRatio: bounds.height / IMAGE_HEIGHT,
-			shapePath: lines.flatMap((l) => l.points),
-		};
+    const pieceCtx = pieceCanvas.getContext("2d");
+    if (!pieceCtx) return;
 
-		setPieces((prev) => [...prev, newPiece]);
-	};
+    pieceCtx.clearRect(0, 0, bounds.width, bounds.height);
 
-	const compressImage = (image: HTMLImageElement, quality: number): string => {
-		const canvas = document.createElement("canvas");
-		const ctx = canvas.getContext("2d");
+    console.log('Drawing piece from source area:', {
+      sourceX: bounds.x,
+      sourceY: bounds.y,
+      sourceWidth: bounds.width,
+      sourceHeight: bounds.height,
+      destWidth: bounds.width,
+      destHeight: bounds.height
+    });
 
-		if (!ctx) return "";
+    pieceCtx.drawImage(
+      image,
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+      0,
+      0,
+      bounds.width,
+      bounds.height
+    );
 
-		canvas.width = image.width;
-		canvas.height = image.height;
-		ctx.drawImage(image, 0, 0, image.width, image.height);
+    pieceCtx.globalCompositeOperation = "destination-in";
+    pieceCtx.fillStyle = "rgba(0,0,0,1)";
 
-		return canvas.toDataURL("image/jpeg", quality);
-	};
+    lines.forEach((line) => {
+      pieceCtx.beginPath();
+      const scaledPoints = scalePoints(line.points);
+      const adjustedPoints = scaledPoints.map((point, index) =>
+        index % 2 === 0 ? point - bounds.x : point - bounds.y
+      );
+      
+      console.log('Adjusted points for masking:', adjustedPoints);
+      
+      if (adjustedPoints.length < 4) return;
+      pieceCtx.moveTo(adjustedPoints[0], adjustedPoints[1]);
+      for (let i = 2; i < adjustedPoints.length; i += 2) {
+        pieceCtx.lineTo(adjustedPoints[i], adjustedPoints[i + 1]);
+      }
+      pieceCtx.closePath();
+      pieceCtx.fill();
+    });
 
-	const compressImageUrl = (
-		imageUrl: string,
-		quality: number
-	): Promise<string> => {
-		return new Promise((resolve, reject) => {
-			const img = new window.Image(); // ✅ Use `window.Image` to avoid conflicts
-			img.crossOrigin = "Anonymous"; // Avoid CORS issues
-			img.src = imageUrl;
+    // Scale down large pieces
+    const finalCanvas = scaleDownCanvas(pieceCanvas, MAX_PIECE_SIZE);
 
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				const ctx = canvas.getContext("2d");
+    const pieceImage = new window.Image();
+    // Need PNG here to preserve transparency
+    pieceImage.src = finalCanvas.toDataURL("image/png", COMPRESSION_QUALITY);
 
-				if (!ctx) return reject("Canvas context not available");
+    const newPiece: PieceData = {
+      id: pieceIdRef.current++,
+      imageSrc: pieceImage.src,
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      xRatio: bounds.x / image.width,
+      yRatio: bounds.y / image.height,
+      widthRatio: bounds.width / image.width,
+      heightRatio: bounds.height / image.height,
+      shapePath: scaledPoints,
+    };
 
-				// Resize the canvas to match the image
-				canvas.width = img.width;
-				canvas.height = img.height;
-				ctx.drawImage(img, 0, 0, img.width, img.height);
+    setPieces((prev) => [...prev, newPiece]);
+  };
 
-				// Convert to JPEG and compress
-				resolve(canvas.toDataURL("image/jpeg", quality));
-			};
+  const compressImage = (source: HTMLCanvasElement | HTMLImageElement, quality: number): string => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-			img.onerror = () => reject("Failed to load image");
-		});
-	};
+    if (!ctx) return "";
 
-	const getBoundingBox = (points: number[]) => {
-		let xVals = points.filter((_, i) => i % 2 === 0);
-		let yVals = points.filter((_, i) => i % 2 !== 0);
-		return {
-			x: Math.min(...xVals),
-			y: Math.min(...yVals),
-			width: Math.max(...xVals) - Math.min(...xVals),
-			height: Math.max(...yVals) - Math.min(...yVals),
-		};
-	};
+    canvas.width = source.width;
+    canvas.height = source.height;
+    ctx.drawImage(source, 0, 0, source.width, source.height);
 
-	const savePuzzle = async () => {
-		if (!image || !canvasImage) return;
+    return canvas.toDataURL("image/jpeg", quality);
+  };
 
-		const puzzleId = `puzzle-${Date.now()}`;
+  const compressImageUrl = (
+    imageUrl: string,
+    quality: number
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.crossOrigin = "Anonymous";
+      img.src = imageUrl;
 
-		// ✅ Compress original imageUrl
-		const compressedOriginalImage = await compressImageUrl(imageUrl, 0.6);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-		// ✅ Compress the holed image
-		const compressedHoledImage = compressImage(canvasImage, 0.6);
+        if (!ctx) return reject("Canvas context not available");
 
-		const puzzle: PuzzleData = {
-			id: puzzleId,
-			imageUrl: compressedOriginalImage, // ✅ Store compressed original image
-			createdAt: new Date().toISOString(),
-			holedImage: compressedHoledImage, // ✅ Store compressed holed image
-			pieces,
-		};
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
 
-		const existingPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
-		existingPuzzles.push(puzzle);
-		localStorage.setItem("puzzles", JSON.stringify(existingPuzzles));
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
 
-		alert("Puzzle saved!");
-		router.push(`/puzzle/play/${puzzleId}`);
-	};
+      img.onerror = () => reject("Failed to load image");
+    });
+  };
 
-	return (
-		<div>
-			<Stage
-				ref={stageRef}
-				width={IMAGE_WIDTH}
-				height={IMAGE_HEIGHT}
-				onMouseDown={handleMouseDown}
-				onMouseMove={handleMouseMove}
-				onMouseUp={handleMouseUp}
-			>
-				<Layer>
-					{canvasImage && (
-						<Image
-							image={canvasImage}
-							width={IMAGE_WIDTH}
-							height={IMAGE_HEIGHT}
-						/>
-					)}
-					{lines.map((line, i) => (
-						<Line key={i} points={line.points} stroke="red" strokeWidth={2} />
-					))}
-				</Layer>
-			</Stage>
+  const getBoundingBox = (points: number[]) => {
+    console.log('getBoundingBox input points:', points);
+    
+    const xVals = points.filter((_, i) => i % 2 === 0);
+    const yVals = points.filter((_, i) => i % 2 !== 0);
+    
+    const bounds = {
+      x: Math.min(...xVals),
+      y: Math.min(...yVals),
+      width: Math.max(...xVals) - Math.min(...xVals),
+      height: Math.max(...yVals) - Math.min(...yVals),
+    };
 
-			<h2>Cut-Out Pieces:</h2>
-			<div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-				{pieces.map((piece) => (
-					<img
-						key={piece.id}
-						src={piece.imageSrc}
-						alt={`Piece ${piece.id}`}
-						width={100}
-						height={75}
-					/>
-				))}
-			</div>
+    console.log('Calculated bounding box:', bounds);
+    return bounds;
+  };
 
-			<button
-				onClick={savePuzzle}
-				style={{
-					marginTop: "20px",
-					padding: "10px",
-					fontSize: "16px",
-					cursor: "pointer",
-				}}
-			>
-				Save & Play
-			</button>
-		</div>
-	);
+  const savePuzzle = async () => {
+    if (!image || !canvasImage) return;
+
+    const puzzleId = `puzzle-${Date.now()}`;
+
+    const compressedOriginalImage = await compressImageUrl(imageUrl, COMPRESSION_QUALITY);
+    const compressedHoledImage = compressImage(canvasImage, COMPRESSION_QUALITY);
+
+    const puzzle: PuzzleData = {
+      id: puzzleId,
+      imageUrl: compressedOriginalImage,
+      createdAt: new Date().toISOString(),
+      holedImage: compressedHoledImage,
+      pieces,
+    };
+
+    const existingPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
+    existingPuzzles.push(puzzle);
+    localStorage.setItem("puzzles", JSON.stringify(existingPuzzles));
+
+    alert("Puzzle saved!");
+    router.push(`/puzzle/play/${puzzleId}`);
+  };
+
+  return (
+    <div>
+      <Stage
+        ref={stageRef}
+        width={DISPLAY_WIDTH}
+        height={DISPLAY_HEIGHT}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      >
+        <Layer>
+          {canvasImage && (
+            <Image
+              image={canvasImage}
+              width={DISPLAY_WIDTH}
+              height={DISPLAY_HEIGHT}
+            />
+          )}
+          {lines.map((line, i) => (
+            <Line key={i} points={line.points} stroke="red" strokeWidth={2} />
+          ))}
+        </Layer>
+      </Stage>
+
+      <h2>Cut-Out Pieces:</h2>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        {pieces.map((piece) => (
+          <img
+            key={piece.id}
+            src={piece.imageSrc}
+            alt={`Piece ${piece.id}`}
+            width={100}
+            height={75}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={savePuzzle}
+        style={{
+          marginTop: "20px",
+          padding: "10px",
+          fontSize: "16px",
+          cursor: "pointer",
+        }}
+      >
+        Save & Play
+      </button>
+    </div>
+  );
 };
 
 export default PuzzleEditor;
