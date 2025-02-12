@@ -2,9 +2,11 @@
 
 A modern, interactive puzzle game where you can create and solve custom puzzles from your own images.
 
-[Add screenshot of game interface]
+![image](https://github.com/user-attachments/assets/1c2d75cd-fa9d-49dc-8cf1-91ed3ce52153)
 
-## 🎮 [Play Now](https://puzzle-game.vercel.app)
+
+## 🎮 Play Now
+[Play Now](https://puzzle-game.vercel.app)
 
 ## ✨ Features
 
@@ -56,7 +58,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📸 Screenshots
 
-[Add gameplay screenshots]
+![image](https://github.com/user-attachments/assets/a45b6451-7bb1-42e8-affe-7115f1af55ce)
+![image](https://github.com/user-attachments/assets/2b896b56-9bf2-4508-8792-b2a9780cef96)
+
 
 ## 🤝 Contributing
 
