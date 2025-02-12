@@ -110,20 +110,19 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({
         const dims = pieceDimensions[`${row}-${col}`] || { width: 100, height: 100 };
 
         rowCells.push(
-          <div
+            <div
             key={`${row}-${col}`}
-            className={`relative border}`}
+            className={`${pieceId} relative border border-gray-800`}
             style={{
               width: dims.width,
               height: dims.height
             }}
-          >
+            >
             <span 
               className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm`}
             >
-              {pieceId !== null ? pieceId : ""}
             </span>
-          </div>
+            </div>
         );
       }
       result.push(
