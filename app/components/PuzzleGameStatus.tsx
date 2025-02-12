@@ -12,37 +12,41 @@ interface PuzzleGameStatusProps {
 
 export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, progress, onRestart }) => {
   const { playClick } = useSoundContext();
-  
-  const getProgressColor = () => {
-    if (progress <= 33) {
-      return 'from-accent-pink via-secondary to-accent-green';
-    } else if (progress <= 66) {
-      return 'from-secondary via-primary to-accent-green';
+
+  const getProgressGradient = () => {
+    if (progress <= 0.33) {
+      return 'from-[#4DB2EC] via-[#FFD800] to-[#4DB2EC]';
+    } else if (progress <= 0.66) {
+      return 'from-[#FFD800] via-[#4DB2EC] to-[#FFD800]';
     }
-    return 'from-primary via-accent-green to-secondary';
+    return 'from-[#4DB2EC] via-[#FFD800] to-[#4DB2EC]';
   };
 
   const getMotivationalMessage = () => {
-    if (progress < 25) return "You've got this! Let's start solving! 🚀";
-    if (progress < 50) return "Great progress! Keep going! ⭐";
-    if (progress < 75) return "You're really getting there! 🌟";
-    if (progress < 100) return "Almost done! You're amazing! 🎯";
-    return "Incredible job! You did it! 🏆";
+    if (progress < 0.25) return "Let's solve this puzzle together! 🚀";
+    if (progress < 0.5) return "You're doing great! Keep going! ⭐";
+    if (progress < 0.75) return "Look how far you've come! 🌟";
+    if (progress < 1) return "Almost there! You're amazing! 🎯";
+    return "Wonderful job! You did it! 🏆";
   };
 
   return (
-    <div className="space-y-4 select-none" role="status" aria-live="polite">
-      <div className="text-center p-4">
-        <div className="relative h-12">
+    <div 
+      className="space-y-6 select-none p-6 bg-white rounded-2xl shadow-lg border-2 border-[#4DB2EC]/10" 
+      role="status" 
+      aria-live="polite"
+    >
+      <div className="text-center">
+        <div className="relative h-14">
           <div 
             className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
               isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
           >
-            <p className="text-accent-green font-bold text-xl flex items-center gap-2">
-              <Trophy className="w-6 h-6 animate-bounce-slow" />
-              Puzzle Solved!
-              <Star className="w-6 h-6 text-secondary animate-spin-slow" />
+            <p className="text-[#4DB2EC] font-bold text-2xl font-comic flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-[#FFD800] animate-bounce-slow" />
+              Amazing Job!
+              <Star className="w-8 h-8 text-[#FFD800] animate-spin-slow" />
             </p>
           </div>
           <div 
@@ -50,41 +54,45 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
               !isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
             }`}
           >
-            <p className="text-white font-comic text-lg">{getMotivationalMessage()}</p>
+            <p className="text-[#4DB2EC] font-comic text-xl">{getMotivationalMessage()}</p>
           </div>
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div 
-        className="w-full h-6 bg-gray-800/50 rounded-full overflow-hidden relative backdrop-blur-sm shadow-inner"
-        role="progressbar"
-        aria-valuenow={Math.round(progress * 100)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <div
-          className={`h-full bg-gradient-to-r ${getProgressColor()} transition-all duration-500 ease-out relative`}
-          style={{ width: `${progress * 100}%` }}
+      <div className="space-y-2">
+        <div 
+          className="w-full h-8 bg-[#4DB2EC]/10 rounded-full overflow-hidden relative shadow-inner"
+          role="progressbar"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-          <span className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold shadow-sm">
+          <div
+            className={`h-full bg-gradient-to-r ${getProgressGradient()} transition-all duration-500 ease-out relative`}
+            style={{ width: `${progress * 100}%` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+          </div>
+          <span className="absolute inset-0 flex items-center justify-center text-[#4DB2EC] font-comic font-bold text-lg">
             {Math.round(progress * 100)}%
           </span>
         </div>
       </div>
 
-      {/* Restart Button */}
       <button
         onClick={() => {
           playClick();
           onRestart();
         }}
-        className="group w-full py-3 px-6 bg-primary hover:bg-blue-500 active:bg-blue-600 text-white rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold"
+        className="group w-full py-4 px-8 bg-[#4DB2EC] hover:bg-[#3DA2DC] text-white rounded-full 
+          transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 
+          disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
+          disabled:transform-none disabled:shadow-none
+          flex items-center justify-center gap-3 font-comic font-bold text-lg"
         aria-label="Restart puzzle game"
       >
-        <RotateCcw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
-        Restart Puzzle
+        <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+        Start Over
       </button>
     </div>
   );

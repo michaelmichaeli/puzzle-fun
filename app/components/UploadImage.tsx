@@ -1,120 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { Image, Upload } from "lucide-react";
+import { useRef } from "react";
+import { useSoundContext } from "../contexts/SoundContext";
+
 interface UploadImageProps {
-	handleImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const UploadImage: React.FC<UploadImageProps> = ({ handleImageChange }) => {
-	const [isDragging, setIsDragging] = useState(false);
-	const [isProcessing, setIsProcessing] = useState(false);
+export default function UploadImage({ handleImageChange }: UploadImageProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { playClick } = useSoundContext();
 
-	const handleDragEnter = (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDragging(true);
-	};
+  const handleClick = () => {
+    playClick();
+    fileInputRef.current?.click();
+  };
 
-	const handleDragLeave = (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDragging(false);
-	};
+  return (
+    <div className="text-center space-y-6">
+      <button
+        onClick={handleClick}
+        className="group relative w-full h-64 border-2 border-dashed border-[#4DB2EC] rounded-xl 
+          hover:border-[#FFD800] transition-colors duration-300 p-8 flex flex-col items-center justify-center gap-4
+          bg-gradient-to-b from-[#E3F2FD] to-white hover:from-[#FFF8E1] to-white"
+      >
+        <Upload className="w-12 h-12 text-[#4DB2EC] group-hover:text-[#FFD800] transition-colors" />
+        <div className="text-center space-y-2">
+          <p className="text-xl font-bold font-comic text-[#4DB2EC] group-hover:text-[#FFD800] transition-colors">
+            Upload an Image
+          </p>
+          <p className="text-sm text-[#4DB2EC]/80 font-comic">
+            Click or drag and drop to upload
+          </p>
+          <p className="text-xs text-[#4DB2EC]/70 font-comic">
+            Supported formats: PNG, JPG, JPEG
+          </p>
+        </div>
 
-	const handleDrop = async (e: React.DragEvent) => {
-		e.preventDefault();
-		setIsDragging(false);
-		setIsProcessing(true);
+        <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-[#E3F2FD] text-[#4DB2EC] text-sm font-comic rounded-b-xl">
+          <div className="flex items-center justify-center gap-2">
+            <Image className="w-4 h-4" />
+            <span>Maximum file size: 5MB</span>
+          </div>
+        </div>
+      </button>
 
-		const file = e.dataTransfer.files[0];
-		if (file) {
-			const input = document.createElement("input");
-			input.type = "file";
-			const dataTransfer = new DataTransfer();
-			dataTransfer.items.add(file);
-			input.files = dataTransfer.files;
-
-			const syntheticEvent = {
-				target: input,
-				currentTarget: input,
-				preventDefault: () => {},
-				stopPropagation: () => {},
-				nativeEvent: new Event("change"),
-				bubbles: true,
-				cancelable: true,
-				defaultPrevented: false,
-				type: "change",
-			} as React.ChangeEvent<HTMLInputElement>;
-
-			await handleImageChange(syntheticEvent);
-		}
-
-		setIsProcessing(false);
-	};
-
-	const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		setIsProcessing(true);
-		await handleImageChange(e);
-		setIsProcessing(false);
-	};
-
-	return (
-		<div
-			className={`flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-all duration-300 ${
-				isDragging
-					? "border-blue-500 bg-blue-500/10"
-					: "border-gray-700 bg-gray-800/50 hover:border-gray-600 hover:bg-gray-800/70"
-			}`}
-			onDragEnter={handleDragEnter}
-			onDragOver={(e) => e.preventDefault()}
-			onDragLeave={handleDragLeave}
-			onDrop={handleDrop}
-		>
-			<label className="cursor-pointer group relative">
-				<div
-					className={`flex flex-col items-center gap-4 transition-opacity duration-300 ${
-						isProcessing ? "opacity-50" : "opacity-100"
-					}`}
-				>
-					<div className="p-4 rounded-full bg-gray-800 group-hover:bg-gray-700 transition-all duration-300 transform group-hover:scale-110">
-						{isProcessing ? (
-							<LoadingSpinner size="sm" />
-						) : (
-							<svg
-								className="w-8 h-8 text-gray-400"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-								/>
-							</svg>
-						)}
-					</div>
-					<div className="text-center space-y-2">
-						<p className="text-gray-300">
-							{isProcessing
-								? "Processing image..."
-								: isDragging
-								? "Drop image here"
-								: "Click or drag image to upload"}
-						</p>
-						<p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
-					</div>
-				</div>
-				<input
-					type="file"
-					className="hidden"
-					accept="image/*"
-					onChange={handleInputChange}
-					disabled={isProcessing}
-				/>
-			</label>
-		</div>
-	);
-};
-
-export default UploadImage;
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="hidden"
+        aria-label="Upload image file"
+      />
+    </div>
+  );
+}

@@ -32,18 +32,12 @@ export default function RootLayout({
       <body 
         className={`${quicksand.variable} ${comicNeue.variable} antialiased min-h-screen flex flex-col relative`}
         style={{
-          background: `
-            linear-gradient(to right, var(--background) 1px, transparent 1px),
-            linear-gradient(to bottom, var(--background) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          backgroundPosition: 'center center',
+          background: 'linear-gradient(180deg, #4DB2EC 0%, #4DB2EC 15%, #FFFFFF 100%)'
         }}
       >
-        <div className="fixed inset-0 bg-gradient-to-br from-primary/5 to-accent-pink/5 pointer-events-none" />
         <SoundProvider>
           <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">
+          <main className="flex-grow container mx-auto px-4 py-4 pt-24">
             {children}
           </main>
           <Footer />

@@ -1,83 +1,242 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 type SoundContextType = {
   isSoundEnabled: boolean;
+  volume: number;
+  setVolume: (volume: number) => void;
   toggleSound: () => void;
   playClick: () => void;
   playSuccess: () => void;
   playComplete: () => void;
+  playDrawLine: () => void;
 };
 
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
-// Utility function to create sounds using Web Audio API
-const createSound = (frequency: number, duration: number, type: OscillatorType = 'sine') => {
-  if (typeof window === 'undefined') return () => {};
+class SoundManager {
+  private audioContext: AudioContext | null = null;
+  private volume: number = 0.5;
+  private musicOscillators: OscillatorNode[] = [];
+  private musicGainNodes: GainNode[] = [];
+  private isMusicPlaying: boolean = false;
+  private currentMusicTimeout: NodeJS.Timeout | null = null;
   
-  return () => {
-  const AudioContextClass = window.AudioContext || ((window as any).webkitAudioContext as typeof AudioContext);
-  const audioContext = new AudioContextClass();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+  initialize() {
+    if (typeof window === 'undefined') return;
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return this.audioContext;
+  }
+
+  setVolume(value: number) {
+    this.volume = Math.max(0, Math.min(1, value));
+    this.musicGainNodes.forEach(gainNode => {
+      gainNode.gain.setValueAtTime(this.volume * 0.2, this.audioContext?.currentTime || 0);
+    });
+  }
+
+  createOscillator(frequency: number, duration: number, type: OscillatorType = 'sine') {
+    const ctx = this.initialize();
+    if (!ctx) return;
+
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
     
     oscillator.type = type;
     oscillator.frequency.value = frequency;
     oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    gainNode.connect(ctx.destination);
     
-    // Quick fade out to avoid clicks
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+    gainNode.gain.setValueAtTime(this.volume * 0.5, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
     
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-  };
-};
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + duration);
+  }
+
+  stopBackgroundMusic() {
+    if (this.currentMusicTimeout) {
+      clearTimeout(this.currentMusicTimeout);
+      this.currentMusicTimeout = null;
+    }
+    
+    this.musicOscillators.forEach(osc => {
+      try {
+        osc.stop();
+        osc.disconnect();
+    } catch (error: unknown) {
+        // Ignore already stopped oscillators
+        if (error instanceof DOMException && error.name === 'InvalidStateError') {
+          // Normal case when oscillator is already stopped
+          return;
+        }
+        console.error('Error stopping oscillator:', error);
+      }
+    });
+    
+    this.musicGainNodes.forEach(gain => {
+      try {
+        gain.disconnect();
+    } catch (error: unknown) {
+        // Ignore disconnected nodes
+        if (error instanceof DOMException && error.name === 'InvalidStateError') {
+          // Normal case when node is already disconnected
+          return;
+        }
+        console.error('Error disconnecting node:', error);
+      }
+    });
+    
+    this.musicOscillators = [];
+    this.musicGainNodes = [];
+    this.isMusicPlaying = false;
+  }
+
+  playBackgroundMusic() {
+    if (this.isMusicPlaying) return;
+    
+    const ctx = this.initialize();
+    if (!ctx) return;
+
+    this.stopBackgroundMusic();
+    this.isMusicPlaying = true;
+
+    const notes = [
+      { freq: 329.63, duration: 0.6 }, // E4 - Gentle start
+      { freq: 392.00, duration: 0.6 }, // G4
+      { freq: 440.00, duration: 0.6 }, // A4
+      { freq: 493.88, duration: 0.8 }, // B4 - Longer note
+      { freq: 440.00, duration: 0.6 }, // A4
+      { freq: 392.00, duration: 0.8 }, // G4 - End phrase
+    ];
+
+    let time = ctx.currentTime;
+    notes.forEach(note => {
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = note.freq;
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      gainNode.gain.setValueAtTime(this.volume * 0.15, time); // Reduced volume
+      gainNode.gain.exponentialRampToValueAtTime(0.001, time + note.duration);
+      
+      oscillator.start(time);
+      oscillator.stop(time + note.duration);
+      
+      this.musicOscillators.push(oscillator);
+      this.musicGainNodes.push(gainNode);
+      
+      time += note.duration;
+    });
+
+    // Schedule next loop before current one ends
+    const totalDuration = notes.reduce((sum, note) => sum + note.duration, 0);
+    this.currentMusicTimeout = setTimeout(() => {
+      this.isMusicPlaying = false;
+      this.playBackgroundMusic();
+    }, (totalDuration * 1000) - 50); // Start slightly before the end to avoid gaps
+  }
+}
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-
-  // Create different sound effects
-  const clickSound = createSound(800, 0.1, 'sine');
-  const successSound = createSound(600, 0.15, 'triangle');
-  const completeSound = () => {
-    if (typeof window === 'undefined') return;
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-    notes.forEach((freq, i) => {
-      setTimeout(() => {
-        createSound(freq, 0.2, 'triangle')();
-      }, i * 150);
-    });
-  };
+  const [volume, setVolume] = useState(0.5);
+  const soundManager = useRef(new SoundManager());
+  const musicInterval = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const stored = localStorage.getItem('soundEnabled');
+    const storedVolume = localStorage.getItem('soundVolume');
+    
     if (stored !== null) {
       setIsSoundEnabled(stored === 'true');
     }
-  }, []);
+    if (storedVolume !== null) {
+      const vol = parseFloat(storedVolume);
+      setVolume(vol);
+      soundManager.current.setVolume(vol);
+    }
 
-  const toggleSound = () => {
-    setIsSoundEnabled(!isSoundEnabled);
-    localStorage.setItem('soundEnabled', (!isSoundEnabled).toString());
+    return () => {
+      if (musicInterval.current) {
+        clearInterval(musicInterval.current);
+        soundManager.current.stopBackgroundMusic();
+      }
+    };
+  }, []); // Run only once on mount
+
+  // Separate effect for handling music state changes
+  useEffect(() => {
+    if (musicInterval.current) {
+      clearInterval(musicInterval.current);
+      soundManager.current.stopBackgroundMusic();
+    }
+
+    if (isSoundEnabled) {
+      soundManager.current.playBackgroundMusic();
+      musicInterval.current = setInterval(() => {
+        soundManager.current.playBackgroundMusic();
+      }, 12000); // Longer interval between loops
+    }
+
+    return () => {
+      if (musicInterval.current) {
+        clearInterval(musicInterval.current);
+        soundManager.current.stopBackgroundMusic();
+      }
+    };
+  }, [isSoundEnabled]);
+
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    soundManager.current.setVolume(newVolume);
+    localStorage.setItem('soundVolume', newVolume.toString());
   };
 
-  const playSoundIfEnabled = (sound: () => void) => {
-    if (isSoundEnabled) {
-      sound();
-    }
+  const toggleSound = () => {
+    setIsSoundEnabled(prev => {
+      const newState = !prev;
+      localStorage.setItem('soundEnabled', newState.toString());
+      
+      return newState;
+    });
+  };
+
+  const playIfEnabled = (callback: () => void) => {
+    if (isSoundEnabled) callback();
+  };
+
+  const effects = {
+    playClick: () => soundManager.current.createOscillator(800, 0.1, 'sine'),
+    playSuccess: () => soundManager.current.createOscillator(600, 0.15, 'triangle'),
+    playComplete: () => {
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      notes.forEach((freq, i) => {
+        setTimeout(() => {
+          soundManager.current.createOscillator(freq, 0.2, 'triangle');
+        }, i * 150);
+      });
+    },
+    playDrawLine: () => soundManager.current.createOscillator(440, 0.1, 'square'),
   };
 
   return (
     <SoundContext.Provider 
       value={{
         isSoundEnabled,
+        volume,
+        setVolume: handleVolumeChange,
         toggleSound,
-        playClick: () => playSoundIfEnabled(clickSound),
-        playSuccess: () => playSoundIfEnabled(successSound),
-        playComplete: () => playSoundIfEnabled(completeSound),
+        playClick: () => playIfEnabled(effects.playClick),
+        playSuccess: () => playIfEnabled(effects.playSuccess),
+        playComplete: () => playIfEnabled(effects.playComplete),
+        playDrawLine: () => playIfEnabled(effects.playDrawLine),
       }}
     >
       {children}

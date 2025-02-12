@@ -1,45 +1,79 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        primary: "var(--primary)",
-        secondary: "var(--secondary)",
-        "accent-pink": "var(--accent-pink)",
-        "accent-green": "var(--accent-green)",
+      fontFamily: {
+        comic: ['var(--font-comic)', 'Comic Neue', 'cursive'],
+        quicksand: ['var(--font-quicksand)', 'Quicksand', 'sans-serif'],
       },
       animation: {
-        'bounce-slow': 'bounce 3s infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'spin-slow': 'spin 3s linear infinite',
-        'wiggle': 'wiggle 1s ease-in-out infinite',
-        'shimmer': 'shimmer 2s linear infinite',
+        'bounce-slow': 'bounce-slow 2s infinite',
+        'spin-slow': 'spin-slow 8s linear infinite',
+        'shimmer': 'shimmer 2s infinite',
+        'fadeIn': 'fadeIn 0.5s ease-out',
+        'slideUp': 'slideUp 0.5s ease-out',
+        'slideDown': 'slideDown 0.5s ease-out',
+        'shake': 'shake 0.2s ease-in-out',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-3deg)' },
-          '50%': { transform: 'rotate(3deg)' },
+        'pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '.5' },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '200% 0' },
-          '100%': { backgroundPosition: '-200% 0' },
-        }
+        'bounce-slow': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        'spin-slow': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+        'shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'fadeIn': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'slideUp': {
+          from: { 
+            opacity: '0',
+            transform: 'translateY(20px)',
+          },
+          to: { 
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
+        'slideDown': {
+          from: { 
+            opacity: '0',
+            transform: 'translateY(-20px)',
+          },
+          to: { 
+            opacity: '1',
+            transform: 'translateY(0)',
+          },
+        },
+        'shake': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateX(-5px)' },
+          '75%': { transform: 'translateX(5px)' },
+        },
       },
-      boxShadow: {
-        'inner-lg': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.1)',
+      colors: {
+        primary: '#4DB2EC',
+        secondary: '#FFD800',
+        'accent-pink': '#FF69B4',
       },
-      fontFamily: {
-        'comic': ['Comic Neue', 'cursive'],
-        'quicksand': ['Quicksand', 'sans-serif'],
-      }
     },
   },
   plugins: [],

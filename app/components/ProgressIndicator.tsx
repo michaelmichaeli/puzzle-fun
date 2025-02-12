@@ -1,51 +1,30 @@
-"use client";
-
-import React from "react";
+import { FC } from 'react';
 
 interface ProgressIndicatorProps {
   progress: number;
   message?: string;
   className?: string;
-  showPercentage?: boolean;
-  color?: string;
 }
 
-export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
+export const ProgressIndicator: FC<ProgressIndicatorProps> = ({
   progress,
   message,
-  className = "",
-  showPercentage = true,
-  color = "blue"
+  className = '',
 }) => {
-  const getProgressColor = () => {
-    switch (color) {
-      case "blue":
-        return "from-blue-500 to-blue-600";
-      case "green":
-        return "from-green-500 to-green-600";
-      case "yellow":
-        return "from-yellow-500 to-yellow-600";
-      default:
-        return "from-blue-500 to-blue-600";
-    }
-  };
-
   return (
     <div className={`space-y-2 ${className}`}>
       {message && (
-        <div className="text-sm text-gray-300 font-medium">
-          {message}
-          {showPercentage && ` (${Math.round(progress)}%)`}
+        <div className="text-[#4DB2EC] font-comic text-center">
+          {message}... {Math.round(progress)}%
         </div>
       )}
-      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+      <div className="h-2 bg-[#4DB2EC]/10 rounded-full overflow-hidden relative">
         <div
-          className={`h-full bg-gradient-to-r ${getProgressColor()} transition-all duration-300 ease-out transform origin-left`}
-          style={{ 
-            width: `${progress}%`,
-            transition: "width 0.3s ease-out"
-          }}
-        />
+          className="h-full bg-gradient-to-r from-[#4DB2EC] via-[#FFD800] to-[#4DB2EC] absolute top-0 left-0 transition-all duration-300 ease-out rounded-full shadow-sm"
+          style={{ width: `${progress}%` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+        </div>
       </div>
     </div>
   );
