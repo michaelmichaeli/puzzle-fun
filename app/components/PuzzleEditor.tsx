@@ -207,38 +207,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 			</div>
 			<div className="relative space-y-2">
 				<div className="flex justify-between items-start">
-					<div className="space-y-1">
-						<p className="text-gray-300 flex items-center gap-2">
-							Cut the image:
-							<span className="text-sm font-mono">
-								<span
-									className={
-										lines.horizontal.length > 0
-											? "text-green-500"
-											: "text-gray-500"
-									}
-								>
-									―
-								</span>
-								<span
-									className={
-										lines.vertical.length > 0
-											? "text-green-500"
-											: "text-gray-500"
-									}
-								>
-									|
-								</span>
-							</span>
-						</p>
-						<p className="text-sm text-gray-500">
-							Place at least one horizontal and one vertical line
-						</p>
-						<div className="text-xs space-x-4 text-gray-400">
-							<span>Horizontal lines: {lines.horizontal.length}</span>
-							<span>Vertical lines: {lines.vertical.length}</span>
-						</div>
-					</div>
 					<div className="space-y-2">
 						<button
 							onClick={resetLines}
