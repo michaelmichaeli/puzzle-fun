@@ -5,7 +5,9 @@ import { DraggablePiece } from "./DraggablePiece";
 import { PuzzleGameStatus } from "./PuzzleGameStatus";
 import { PuzzleGrid } from "./PuzzleGrid";
 import { usePuzzleSolver } from "../hooks/usePuzzleSolver";
+import { useSoundContext } from "../contexts/SoundContext";
 import { PieceData, BoardMatrix } from "@/types/puzzle";
+import Confetti from "./Confetti";
 
 interface PuzzleSolverProps {
 	pieces: PieceData[];
@@ -16,14 +18,15 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 	pieces,
 	solution,
 }) => {
-	const {
-		positions,
-		onPieceMove,
-		isSolved,
-		shufflePieces,
-		getProgress,
-		restart,
-	} = usePuzzleSolver({ pieces, solution });
+const {
+  positions,
+  onPieceMove,
+  isSolved,
+  shufflePieces,
+  getProgress,
+  restart,
+} = usePuzzleSolver({ pieces, solution });
+const { playSuccess } = useSoundContext();
 
 	useEffect(() => {
 		const loadPieces = async () => {
@@ -55,41 +58,65 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 		loadPieces();
 	}, [pieces, positions, shufflePieces]);
 
-	const handleRestart = async () => {
-		const container = document.getElementById("puzzle-board");
-		if (!container) return;
+const handleRestart = async () => {
+  const container = document.getElementById("puzzle-board");
+  if (!container) return;
+  restart();
+};
 
-		restart();
-	};
+const handlePieceMove = (id: number, x: number, y: number) => {
+  const prevProgress = getProgress();
+  onPieceMove(id, x, y);
+  const newProgress = getProgress();
+  
+  // Play sound when a piece is correctly placed
+  if (newProgress > prevProgress) {
+    playSuccess();
+  }
+};
 
 	return (
-		<div className="space-y-4 relative">
-			<div className="space-y-2">
-				<PuzzleGameStatus
-					isSolved={isSolved()}
-					progress={getProgress()}
-					onRestart={handleRestart}
-				/>
-			</div>
-			<div
-				id="puzzle-board"
-				className="relative w-full h-[calc(100vh-8rem)] bg-gray-900 border border-gray-800 rounded-lg overflow-hidden"
-				style={{ touchAction: "none" }}
-			>
-				<PuzzleGrid
-					solution={solution}
-					pieces={pieces}
-					currentPositions={positions}
-				/>
-				{pieces.map((piece) => (
-					<DraggablePiece
-						key={piece.id}
-						piece={piece}
-						onDrag={(id, x, y) => onPieceMove(id, x, y)}
-						position={positions[piece.id] || { x: 0, y: 0 }}
-					/>
-				))}
-			</div>
-		</div>
+<div 
+  className="space-y-4 relative"
+  role="application"
+  aria-label="Puzzle Game Board"
+>
+  <Confetti isActive={isSolved()} />
+  
+  <div className="space-y-2">
+    <PuzzleGameStatus
+      isSolved={isSolved()}
+      progress={getProgress()}
+      onRestart={handleRestart}
+    />
+  </div>
+  
+  <div
+    id="puzzle-board"
+    className="relative w-full h-[calc(100vh-8rem)] bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl"
+    style={{ touchAction: "none" }}
+    role="region"
+    aria-label="Puzzle play area"
+  >
+    <PuzzleGrid
+      solution={solution}
+      pieces={pieces}
+      currentPositions={positions}
+    />
+    {pieces.map((piece) => (
+      <DraggablePiece
+        key={piece.id}
+        piece={piece}
+        onDrag={(id, x, y) => handlePieceMove(Number(id), x, y)}
+        position={positions[piece.id] || { x: 0, y: 0 }}
+      />
+    ))}
+  </div>
+  
+  <div className="sr-only" aria-live="polite">
+    {`Current progress: ${Math.round(getProgress() * 100)}%`}
+    {isSolved() && "Congratulations! You've completed the puzzle!"}
+  </div>
+</div>
 	);
 };
