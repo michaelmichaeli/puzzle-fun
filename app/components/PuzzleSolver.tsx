@@ -7,12 +7,11 @@ import { PieceData } from "@/types/puzzle";
 
 interface PuzzleSolverProps {
   pieces: PieceData[];
-  onSolved: () => void;
 }
 
-export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) => {
+export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces }) => {
   const [, setBoardSize] = useState({ width: 0, height: 0 });
-  const { positions, connectedGroups, onPieceMove, isSolved } = usePuzzleSolver({ pieces });
+  const { positions, onPieceMove } = usePuzzleSolver({ pieces });
 
   // Initialize positions for pieces in a grid layout
   useEffect(() => {
@@ -59,18 +58,6 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) 
     }
   }, [pieces, positions, onPieceMove]);
 
-  // Check if puzzle is solved
-  useEffect(() => {
-    if (isSolved()) {
-      onSolved();
-    }
-  }, [isSolved, onSolved]);
-
-  // Find which group a piece belongs to
-  const isPieceInGroup = (pieceId: number) => {
-    return connectedGroups.some(group => group.pieces.includes(pieceId));
-  };
-
   return (
     <div 
       id="puzzle-board"
@@ -82,7 +69,6 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, onSolved }) 
           piece={piece}
           onDrag={onPieceMove}
           position={positions[piece.id] || { x: 0, y: 0 }}
-          isPartOfGroup={isPieceInGroup(piece.id)}
         />
       ))}
     </div>

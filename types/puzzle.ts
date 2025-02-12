@@ -1,3 +1,38 @@
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface Lines {
+  horizontal: number[];
+  vertical: number[];
+}
+
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface Piece {
+  id: number;
+  image: HTMLCanvasElement;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  connections: PieceConnection;
+  gridPosition: {
+    row: number;
+    col: number;
+  };
+}
+
+export interface UsePuzzleEditorProps {
+  imageUrl: string;
+}
+
 export interface PieceConnection {
   top?: number;
   right?: number;

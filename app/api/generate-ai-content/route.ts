@@ -1,63 +1,59 @@
 import { NextRequest } from "next/server";
 import { AiGeneratedContent } from "@/types/puzzle";
+import { createClarifaiAPI } from "../clarifai";
+
+const MODEL_ID = 'general-image-recognition';
+const MODEL_VERSION_ID = 'aa7f35c01e0642fda5cf400f543e7c40';
 
 export async function POST(req: NextRequest) {
   try {
     const { imageUrl } = await req.json();
-
+    
     if (!imageUrl) {
       return new Response("Image URL is required", { status: 400 });
     }
 
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4-vision-preview",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Analyze this image and provide a descriptive title, a brief description of what you see, and any interesting historical or cultural context. Format the response as a JSON object with 'title', 'description', and 'context' fields. Keep the title under 50 characters, the description under 150 characters, and the context under 200 characters.",
-                },
-                {
-                  type: "image_url",
-                  image_url: imageUrl,
-                },
-              ],
-            },
-          ],
-          max_tokens: 500,
-        }),
-      });
+    if (!process.env.CLARIFAI_PAT) {
+      console.error("Clarifai PAT is not configured");
+      return new Response("Server configuration error", { status: 500 });
+    }
 
-      if (!response.ok) {
-        throw new Error("OpenAI API error");
+    const clarifai = createClarifaiAPI({
+      userId: process.env.CLARIFAI_USER_ID || 'clarifai',
+      appId: process.env.CLARIFAI_APP_ID || 'main',
+      pat: process.env.CLARIFAI_PAT
+    });
+
+    try {
+      const response = await clarifai.predictImage(imageUrl, MODEL_ID, MODEL_VERSION_ID);
+
+      if (!response.outputs?.[0]?.data?.concepts) {
+        console.error("Unexpected Clarifai response format:", response);
+        return new Response("Invalid response from Clarifai", { status: 500 });
       }
 
-      const data = await response.json();
-      const content = JSON.parse(data.choices[0].message.content);
+      // Get top 5 concepts
+      const concepts = response.outputs[0].data.concepts
+        .slice(0, 5)
+        .map(c => c.name);
 
+      // Create a descriptive response
       const aiContent: AiGeneratedContent = {
-        title: content.title,
-        description: content.description,
-        context: content.context,
+        title: concepts[0] || "Untitled",
+        description: `This image appears to show ${concepts.join(', ')}.`,
+        context: `The image was analyzed using Clarifai's general image recognition model, which identified these key elements with high confidence.`
       };
 
       return new Response(JSON.stringify(aiContent), {
         headers: { "Content-Type": "application/json" },
       });
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error);
-      return new Response("Error generating content", { status: 500 });
+    } catch (error: unknown) {
+      console.error("Error calling Clarifai API:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      return new Response(`Error calling Clarifai API: ${errorMessage}`, { status: 500 });
     }
-  } catch {
+  } catch (error) {
+    console.error("Server error:", error);
     return new Response("Invalid request body", { status: 400 });
   }
 }

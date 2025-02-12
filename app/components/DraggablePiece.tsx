@@ -8,14 +8,12 @@ interface DraggablePieceProps {
   piece: PieceData;
   onDrag: (id: number, x: number, y: number) => void;
   position: { x: number; y: number };
-  isPartOfGroup: boolean;
 }
 
 export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   piece,
   onDrag,
-  position,
-  isPartOfGroup
+  position
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -47,16 +45,10 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
     >
       <div
         ref={dragRef}
-        className={`absolute transition-transform duration-150 ease-out ${
-          isPartOfGroup ? "z-20" : "z-10 hover:z-20"
-        }`}
+        className="absolute transition-transform duration-150 ease-out z-10 hover:z-20"
       >
         <div
-          className={`relative transition-all duration-200 ${
-            isPartOfGroup 
-              ? "scale-[1.001] shadow-lg ring-2 ring-green-500" 
-              : "hover:scale-[1.02] hover:shadow-xl"
-          }`}
+          className="relative transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
         >
           <canvas
             ref={canvasRef}

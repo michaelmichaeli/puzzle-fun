@@ -11,7 +11,6 @@ interface PlayPageProps {
 
 export default function PlayPage({ params }: PlayPageProps) {
   const [puzzle, setPuzzle] = useState<Puzzle | null>(null);
-  const [isSolved, setIsSolved] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,11 +40,6 @@ export default function PlayPage({ params }: PlayPageProps) {
     }
   }, [params.id, router]);
 
-  const handlePuzzleSolved = () => {
-    setIsSolved(true);
-    // You could save the completion status, show a celebration animation, etc.
-  };
-
   if (!puzzle) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -66,19 +60,11 @@ export default function PlayPage({ params }: PlayPageProps) {
             </div>
           )}
         </div>
-        {isSolved && (
-          <div className="text-green-500 font-bold animate-bounce">
-            🎉 Puzzle Solved! Congratulations! 🎉
-          </div>
-        )}
       </div>
       
       <div className="relative rounded-lg overflow-hidden shadow-xl mt-4">
         {puzzle.pieces && puzzle.pieces.length > 0 ? (
-          <PuzzleSolver
-            pieces={puzzle.pieces}
-            onSolved={handlePuzzleSolved}
-          />
+          <PuzzleSolver pieces={puzzle.pieces} />
         ) : (
           <div className="flex items-center justify-center h-full">
             No puzzle pieces found

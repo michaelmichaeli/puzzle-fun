@@ -1,33 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PieceConnection } from "@/types/puzzle";
-
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface Lines {
-  horizontal: number[];
-  vertical: number[];
-}
-
-interface Piece {
-  id: number;
-  image: HTMLCanvasElement;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  connections: PieceConnection;
-  gridPosition: {
-    row: number;
-    col: number;
-  };
-}
-
-interface UsePuzzleEditorProps {
-  imageUrl: string;
-}
+import { PieceConnection, Point, Lines, Piece, UsePuzzleEditorProps } from "@/types/puzzle";
 
 export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

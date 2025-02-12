@@ -1,9 +1,4 @@
-interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import { BoundingBox } from "@/types/puzzle";
 
 export const compressImage = (
   source: HTMLCanvasElement | HTMLImageElement,

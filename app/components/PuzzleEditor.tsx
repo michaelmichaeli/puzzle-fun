@@ -15,8 +15,12 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   const [isGeneratingAiContent, setIsGeneratingAiContent] = useState(false);
   const [aiContent, setAiContent] = useState<AiGeneratedContent>();
 
+  const [error, setError] = useState<string | null>(null);
+
   const generateAiContent = async (imageUrl: string) => {
     setIsGeneratingAiContent(true);
+    setError(null);
+    
     try {
       const response = await fetch("/api/generate-ai-content", {
         method: "POST",
@@ -24,13 +28,22 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
         body: JSON.stringify({ imageUrl })
       });
       
-      if (!response.ok) throw new Error("Failed to generate AI content");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to generate AI content");
+      }
       
       const data = await response.json();
+      if (!data.title) {
+        throw new Error("Invalid AI response: missing title");
+      }
+      
       setAiContent(data);
       setTitle(data.title);
     } catch (error) {
-      console.error("Error generating AI content:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("Error generating AI content:", errorMessage);
+      setError(errorMessage);
     } finally {
       setIsGeneratingAiContent(false);
     }
@@ -103,29 +116,29 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       {isGeneratingAiContent && (
         <div className="text-blue-500">Generating AI descriptions...</div>
       )}
-      {aiContent && (
+      {error && (
+        <div className="text-red-500 mb-2">{error}</div>
+      )}
+      {aiContent && !error && (
         <div className="space-y-2 text-gray-300">
           <p><span className="text-gray-500">Description:</span> {aiContent.description}</p>
           <p><span className="text-gray-500">Context:</span> {aiContent.context}</p>
         </div>
       )}
       <div className="flex gap-4 items-center">
+        <label htmlFor="title">Title:</label>
         <input
+          name="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter puzzle title"
           className="px-4 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none"
         />
-        <button 
-          onClick={handleBreakAndSave}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-          disabled={!title.trim()}
-        >
-          Break & Save Image
-        </button>
+
       </div>
       <div className="relative">
+      <p>Cut the image:</p>
         <canvas
           ref={canvasRef}
           onMouseMove={onMouseMove}
@@ -156,6 +169,13 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
           ))}
         </div>
       </div>
+      <button 
+          onClick={handleBreakAndSave}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+          disabled={!title.trim()}
+        >
+          Break & Save Image
+        </button>
     </div>
   );
 };
