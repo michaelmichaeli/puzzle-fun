@@ -28,10 +28,10 @@ A modern, interactive puzzle game where you can create and solve custom puzzles 
 
 ```bash
 # Clone repository
-git clone https://github.com/michaelmichaeli/drag.git
+git clone https://github.com/michaelmichaeli/fuzzle-fun.git
 
 # Install dependencies
-cd drag
+cd fuzzle-fun
 npm install
 
 # Run development server
