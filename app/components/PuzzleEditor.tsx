@@ -7,6 +7,7 @@ import type { Puzzle, AiGeneratedContent } from "@/types/puzzle";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useSoundContext } from "../contexts/SoundContext";
+import { Sparkles, RefreshCw } from "lucide-react";
 
 interface PuzzleEditorProps {
 	imageUrl: string;
@@ -106,6 +107,11 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 		resetLines();
 	};
 
+	const handleRegenerateContent = () => {
+		playClick();
+		generateAiContent(imageUrl);
+	};
+
 	useEffect(() => {
 		const savePuzzle = async () => {
 			if (pieces.length === 0) return;
@@ -113,7 +119,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 			// Generate unique ID: timestamp + random number
 			const uniqueId = `${Date.now()}-${Math.random()
 				.toString(36)
-				.substr(2, 9)}`;
+				.substr(2, 9)}`; // eslint-disable-line quotes
 			const maxRow = Math.max(...pieces.map((p) => p.gridPosition.row)) + 1;
 			const maxCol = Math.max(...pieces.map((p) => p.gridPosition.col)) + 1;
 
@@ -187,14 +193,31 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 					</div>
 				</div>
 			)}
+
+			<div className="bg-[#FFF8E1] p-6 rounded-2xl border-2 border-[#FFD800] shadow-lg">
+				<div className="flex items-start gap-3">
+					<Sparkles className="w-6 h-6 text-[#FFD800] mt-1 animate-pulse" />
+					<div className="space-y-2">
+						<p className="font-comic text-[#4DB2EC]">
+							<span className="font-bold">AI Magic in Action! ✨</span>
+							<br />
+							We&apos;re using AI to analyze your image and create a perfect
+							title and description.
+						</p>
+					</div>
+				</div>
+			</div>
+
 			{error && (
 				<div className="px-6 py-3 bg-red-50 text-red-600 rounded-full font-comic mb-4 shadow-sm border border-red-100">
 					{error}
 				</div>
 			)}
+
 			{isAiContentLoading ? (
-				<div className="flex justify-center py-4">
-					<LoadingSpinner size="md" />
+				<div className="flex items-center justify-center gap-2 py-4 text-[#4DB2EC] font-comic">
+					<LoadingSpinner size="sm" />
+					<span>AI is thinking...</span>
 				</div>
 			) : (
 				aiContent &&
@@ -211,19 +234,36 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 					</div>
 				)
 			)}
+
 			<div className="flex gap-4 items-center bg-white p-6 rounded-2xl shadow-md border-2 border-[#4DB2EC]/10">
-				<label htmlFor="title" className="text-[#4DB2EC] font-bold font-comic">
+				<label
+					htmlFor="title"
+					className="text-[#4DB2EC] font-bold font-comic whitespace-nowrap"
+				>
 					Title:
 				</label>
-				<input
-					name="title"
-					type="text"
-					value={title}
-					onChange={(e) => setTitle(e.target.value)}
-					placeholder="Enter puzzle title"
-					className="flex-1 px-6 py-3 rounded-full bg-white text-[#4DB2EC] border-2 border-[#4DB2EC] focus:border-[#FFD800] outline-none font-comic shadow-sm"
-				/>
+				<div className="flex-1 flex gap-2 items-center">
+					<input
+						name="title"
+						type="text"
+						value={title}
+						onChange={(e) => setTitle(e.target.value)}
+						placeholder="Enter puzzle title"
+						className="w-full px-6 py-3 rounded-full bg-white text-[#4DB2EC] border-2 border-[#4DB2EC] focus:border-[#FFD800] outline-none font-comic shadow-sm"
+					/>
+					<button
+						onClick={handleRegenerateContent}
+						disabled={isAiContentLoading}
+						className="p-3 bg-[#FFD800] text-[#4DB2EC] rounded-full hover:bg-[#FFE800] 
+							disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
+							transition-all transform hover:scale-105 shadow-md"
+						aria-label="Regenerate title and description"
+					>
+						<RefreshCw className="w-5 h-5" />
+					</button>
+				</div>
 			</div>
+
 			<div className="relative space-y-4">
 				<div className="flex justify-between items-start">
 					<button
@@ -233,7 +273,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 							lines.horizontal.length > 0 ||
 							lines.vertical.length > 0
 								? "bg-[#4DB2EC] text-white hover:bg-[#3DA2DC] shadow-md"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+								: "bg-gray-100 text-gray-400 cursor-not-allowed"
 						}`}
 						disabled={
 							lines.horizontal.length === 0 &&
@@ -300,9 +340,9 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 			<div className="flex justify-end gap-4">
 				<button
 					onClick={handleBreakAndSave}
-          className="px-8 py-4 bg-[#4DB2EC] text-white rounded-full hover:bg-[#3DA2DC] disabled:bg-gray-100 
-          disabled:text-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
-          transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-comic font-bold"
+					className="px-8 py-4 bg-[#4DB2EC] text-white rounded-full hover:bg-[#3DA2DC] disabled:bg-gray-100 
+						disabled:text-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
+						transition-all transform hover:scale-105 shadow-lg hover:shadow-xl font-comic font-bold"
 					disabled={
 						!title.trim() ||
 						pieces.length > 0 ||
