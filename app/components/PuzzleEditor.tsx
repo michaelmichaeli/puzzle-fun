@@ -5,6 +5,7 @@ import { usePuzzleEditor } from "../hooks/usePuzzleEditor";
 import { useRouter } from "next/navigation";
 import type { Puzzle, AiGeneratedContent } from "@/types/puzzle";
 import { ProgressIndicator } from "./ProgressIndicator";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface PuzzleEditorProps {
 	imageUrl: string;
@@ -16,6 +17,8 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 	const [aiContent, setAiContent] = useState<AiGeneratedContent>();
 	const [error, setError] = useState<string | null>(null);
 	const [imageLoadProgress, setImageLoadProgress] = useState(0);
+	const [isAiContentLoading, setIsAiContentLoading] = useState(false);
+	const [isSavingPuzzle, setIsSavingPuzzle] = useState(false);
 
 	const {
 		canvasRef,
@@ -29,6 +32,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 
 	const generateAiContent = async (imageUrl: string) => {
 		setError(null);
+		setIsAiContentLoading(true);
 
 		try {
 			const response = await fetch("/api/generate-ai-content", {
@@ -54,6 +58,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 				error instanceof Error ? error.message : "An unknown error occurred";
 			setError(errorMessage);
 		} finally {
+			setIsAiContentLoading(false);
 		}
 	};
 
@@ -84,6 +89,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 			return;
 		}
 
+		setIsSavingPuzzle(true);
 		try {
 			breakImage();
 		} catch (error) {
@@ -96,8 +102,10 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 		const savePuzzle = async () => {
 			if (pieces.length === 0) return;
 
-			const puzzleId = crypto.randomUUID();
-
+			// Sanitize title for URL
+			const titleForUrl = encodeURIComponent(
+				title.trim().toLowerCase().replace(/\s+/g, "-")
+			);
 			const maxRow = Math.max(...pieces.map((p) => p.gridPosition.row)) + 1;
 			const maxCol = Math.max(...pieces.map((p) => p.gridPosition.col)) + 1;
 
@@ -109,7 +117,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 			});
 
 			const puzzle: Puzzle = {
-				id: puzzleId,
+				id: titleForUrl,
 				title: title.trim(),
 				imageUrl,
 				createdAt: new Date().toISOString(),
@@ -144,29 +152,47 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 				localStorage.setItem("puzzles", JSON.stringify(savedPuzzles));
 
 				await new Promise((resolve) => setTimeout(resolve, 500));
-				router.push(`/puzzle/play/${puzzleId}`);
+				router.push(`/puzzle/play/${titleForUrl}`);
 			} catch (error) {
 				console.error("Error saving puzzle:", error);
 				setError("Failed to save puzzle");
 			}
 		};
 
-		savePuzzle();
-	}, [pieces, title, imageUrl, router, canvasRef, aiContent]);
+		if (isSavingPuzzle) {
+			savePuzzle();
+		}
+	}, [pieces, title, imageUrl, router, canvasRef, aiContent, isSavingPuzzle]);
 
 	return (
 		<div className="relative space-y-4 transition-opacity duration-300">
-			{error && <div className="text-red-500 mb-2">{error}</div>}
-			{aiContent && !error && (
-				<div className="space-y-2 text-gray-300">
-					<p>
-						<span className="text-gray-500">Description:</span>{" "}
-						{aiContent.description}
-					</p>
-					<p>
-						<span className="text-gray-500">Context:</span> {aiContent.context}
-					</p>
+			{isSavingPuzzle && (
+				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+					<div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
+						<LoadingSpinner size="lg" />
+						<p className="mt-4 text-gray-300">Saving puzzle...</p>
+					</div>
 				</div>
+			)}
+			{error && <div className="text-red-500 mb-2">{error}</div>}
+			{isAiContentLoading ? (
+				<div className="space-y-2 text-gray-300 flex justify-center py-4">
+					<LoadingSpinner size="md" />
+				</div>
+			) : (
+				aiContent &&
+				!error && (
+					<div className="space-y-2 text-gray-300">
+						<p>
+							<span className="text-gray-500">Description:</span>{" "}
+							{aiContent.description}
+						</p>
+						<p>
+							<span className="text-gray-500">Context:</span>{" "}
+							{aiContent.context}
+						</p>
+					</div>
+				)
 			)}
 			<div className="flex gap-4 items-center">
 				<label htmlFor="title">Title:</label>
@@ -283,7 +309,7 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 								objectFit: "contain",
 							}}
 						/>
-					</div>					
+					</div>
 				</div>
 			</div>
 			<div className="flex justify-end gap-4">

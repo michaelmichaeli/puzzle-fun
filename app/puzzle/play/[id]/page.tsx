@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface PlayPageProps {
-  params: { id: string };
+  params: { id: string }; 
 }
 
 export default function PlayPage({ params }: PlayPageProps) {
@@ -15,11 +15,9 @@ export default function PlayPage({ params }: PlayPageProps) {
   const router = useRouter();
 
   useEffect(() => {
-    // Load puzzle data from local storage
     const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
-    const selectedPuzzle = savedPuzzles.find((p: Puzzle) => p.id === params.id);
+    const selectedPuzzle = savedPuzzles.find((p: Puzzle) => p.id === decodeURIComponent(params.id));
     if (selectedPuzzle) {
-      // Pre-load all piece images
       const loadPieceImages = async () => {
         const loadImage = (src: string): Promise<void> => {
           return new Promise((resolve) => {
@@ -29,14 +27,12 @@ export default function PlayPage({ params }: PlayPageProps) {
           });
         };
 
-        // Load all piece images concurrently
         await Promise.all(selectedPuzzle.pieces.map((piece: PieceData) => loadImage(piece.imageSrc)));
         setPuzzle(selectedPuzzle);
       };
 
       loadPieceImages();
     } else {
-      // Puzzle not found, redirect to home
       router.push("/");
     }
   }, [params.id, router]);
