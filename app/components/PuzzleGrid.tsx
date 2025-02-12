@@ -105,18 +105,12 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
       const rowCells = [];
       for (let col = 0; col < solution.cols; col++) {
         const pieceId = solution.grid[row][col];
-        const filledWithPieceId = filledCells[`${row}-${col}`];
-        const correctPiece = filledWithPieceId === pieceId;
         const dims = pieceDimensions[`${row}-${col}`] || { width: 100, height: 100 };
 
         rowCells.push(
           <div
             key={`${row}-${col}`}
-            className={`relative border transition-all duration-200 ${
-              correctPiece ? 'border-green-500/50 bg-green-900/20' : 
-              filledWithPieceId ? 'border-red-500/50 bg-red-900/20' : 
-              'border-gray-700 bg-gray-800/20'
-            }`}
+            className="relative border border-gray-700 bg-gray-800/20 transition-all duration-200"
             style={{
               width: dims.width,
               height: dims.height,

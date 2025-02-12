@@ -200,10 +200,30 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     return isCorrect;
   }, [getCurrentMatrix, solution, pieces, isGameCompleted]);
 
+  const getProgress = useCallback((): number => {
+    const currentMatrix = getCurrentMatrix();
+    let correctPieces = 0;
+    let totalPieces = 0;
+
+    for (let row = 0; row < solution.rows; row++) {
+      for (let col = 0; col < solution.cols; col++) {
+        if (solution.grid[row][col] !== null) {
+          totalPieces++;
+          if (currentMatrix.grid[row][col] === solution.grid[row][col]) {
+            correctPieces++;
+          }
+        }
+      }
+    }
+
+    return totalPieces > 0 ? Math.round((correctPieces / totalPieces) * 100) : 0;
+  }, [getCurrentMatrix, solution]);
+
   return {
     positions,
     onPieceMove,
     isSolved,
-    shufflePieces
+    shufflePieces,
+    getProgress
   };
 };
