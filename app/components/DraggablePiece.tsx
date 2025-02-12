@@ -6,7 +6,7 @@ import { PieceData } from "@/types/puzzle";
 
 interface DraggablePieceProps {
   piece: PieceData;
-  onDrag: (id: number, x: number, y: number) => void;
+  onDrag: (id: number, x: number, y: number, boardWidth: number, boardHeight: number) => void;
   position: { x: number; y: number };
 }
 
@@ -33,7 +33,10 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   }, [piece]);
 
   const handleDrag = (_: DraggableEvent, data: DraggableData) => {
-    onDrag(piece.id, data.x, data.y);
+    const board = document.getElementById("puzzle-board");
+    const boardWidth = board?.clientWidth || 0;
+    const boardHeight = board?.clientHeight || 0;
+    onDrag(piece.id, data.x, data.y, boardWidth, boardHeight);
   };
 
   return (

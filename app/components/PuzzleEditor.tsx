@@ -78,6 +78,17 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
   useEffect(() => {
     if (pieces.length > 0) {
       const puzzleId = crypto.randomUUID();
+      
+      // Find the dimensions of the solution matrix
+      const maxRow = Math.max(...pieces.map(p => p.gridPosition.row)) + 1;
+      const maxCol = Math.max(...pieces.map(p => p.gridPosition.col)) + 1;
+      
+      // Create the solution matrix
+      const grid = Array(maxRow).fill(null).map(() => Array(maxCol).fill(null));
+      pieces.forEach(piece => {
+        grid[piece.gridPosition.row][piece.gridPosition.col] = piece.id;
+      });
+
       const puzzle: Puzzle = {
         id: puzzleId,
         title: title.trim(),
@@ -98,7 +109,12 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
         })),
         originalWidth: canvasRef.current!.width,
         originalHeight: canvasRef.current!.height,
-        connectedGroups: []
+        connectedGroups: [],
+        solution: {
+          rows: maxRow,
+          cols: maxCol,
+          grid
+        }
       };
 
       // Save to local storage

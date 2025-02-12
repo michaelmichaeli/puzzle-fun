@@ -78,6 +78,12 @@ export interface AiGeneratedContent {
   context: string;
 }
 
+export interface BoardMatrix {
+  rows: number;
+  cols: number;
+  grid: Array<Array<number | null>>;
+}
+
 export interface Puzzle {
   id: string;
   title: string;
@@ -88,4 +94,5 @@ export interface Puzzle {
   originalHeight: number;
   connectedGroups: ConnectedGroup[];
   aiContent?: AiGeneratedContent;
+  solution: BoardMatrix;
 }

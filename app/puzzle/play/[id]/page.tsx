@@ -63,8 +63,8 @@ export default function PlayPage({ params }: PlayPageProps) {
       </div>
       
       <div className="relative rounded-lg overflow-hidden shadow-xl mt-4">
-        {puzzle.pieces && puzzle.pieces.length > 0 ? (
-          <PuzzleSolver pieces={puzzle.pieces} />
+        {puzzle.pieces && puzzle.pieces.length > 0 && puzzle.solution ? (
+          <PuzzleSolver pieces={puzzle.pieces} solution={puzzle.solution} />
         ) : (
           <div className="flex items-center justify-center h-full">
             No puzzle pieces found
