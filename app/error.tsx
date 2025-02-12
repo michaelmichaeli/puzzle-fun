@@ -8,7 +8,6 @@ export default function Error({ error }: { error: Error }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Log the error to an error reporting service or console
     console.error('An error occurred:', error);
   }, [error]);
 

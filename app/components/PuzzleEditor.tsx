@@ -115,11 +115,9 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
 	useEffect(() => {
 		const savePuzzle = async () => {
 			if (pieces.length === 0) return;
-
-			// Generate unique ID: timestamp + random number
 			const uniqueId = `${Date.now()}-${Math.random()
 				.toString(36)
-				.substr(2, 9)}`; // eslint-disable-line quotes
+				.substr(2, 9)}`;
 			const maxRow = Math.max(...pieces.map((p) => p.gridPosition.row)) + 1;
 			const maxCol = Math.max(...pieces.map((p) => p.gridPosition.col)) + 1;
 

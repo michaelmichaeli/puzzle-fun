@@ -29,13 +29,9 @@ export async function POST(req: NextRequest) {
       if (!response.outputs?.[0]?.data?.concepts) {
         return new Response("Invalid response from Clarifai", { status: 500 });
       }
-
-      // Get top 5 concepts
       const concepts = response.outputs[0].data.concepts
         .slice(0, 5)
         .map(c => c.name);
-
-      // Create a descriptive response
       const aiContent: AiGeneratedContent = {
         title: concepts[0] || "Untitled",
         description: `This image appears to show ${concepts.join(', ')}.`,

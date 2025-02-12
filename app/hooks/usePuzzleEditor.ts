@@ -19,7 +19,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
 
-    // Draw existing lines
     lines.horizontal.forEach(y => {
       const scaledY = y * scale;
       ctx.beginPath();
@@ -36,12 +35,11 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       ctx.stroke();
     });
 
-    // Draw hover lines with color feedback
     if (hoverPoint) {
       const x = (hoverPoint.x / ctx.canvas.width) * originalDimensions.width;
       const y = (hoverPoint.y / ctx.canvas.height) * originalDimensions.height;
       
-      const threshold = originalDimensions.width * 0.03; // 3% of image width
+      const threshold = originalDimensions.width * 0.03;
       const edgeThreshold = threshold;
       const isTooCloseToEdge = 
         x < edgeThreshold || 
@@ -62,13 +60,11 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       const existingVertical = Math.abs(nearestVertical - x) < threshold;
       const existingHorizontal = Math.abs(nearestHorizontal - y) < threshold;
 
-      // Draw invalid placement indicator
       if (isTooCloseToEdge || existingVertical || existingHorizontal) {
         ctx.strokeStyle = '#ff4444';
         ctx.fillStyle = '#ff444420';
         ctx.setLineDash([5, 5]);
 
-        // Highlight nearby lines
         if (existingVertical) {
           const nearX = nearestVertical * scale;
           ctx.fillRect(nearX - threshold * scale / 2, 0, threshold * scale, ctx.canvas.height);
@@ -97,7 +93,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
 
         ctx.setLineDash([]);
       } else {
-        // Draw valid placement indicator
         ctx.strokeStyle = '#00ff00';
         ctx.setLineDash([5, 5]);
 
@@ -177,8 +172,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     const x = (hoverPoint.x / canvasRef.current.width) * originalDimensions.width;
     const y = (hoverPoint.y / canvasRef.current.height) * originalDimensions.height;
 
-    // Check if the new line would be too close to existing lines or edges
-    const threshold = originalDimensions.width * 0.03; // 3% of image width
+    const threshold = originalDimensions.width * 0.03;
     const existingVertical = lines.vertical.find(vx => Math.abs(vx - x) < threshold);
     const existingHorizontal = lines.horizontal.find(vy => Math.abs(vy - y) < threshold);
 
@@ -196,7 +190,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
         vertical: existingVertical ? prev.vertical : [...prev.vertical, x].sort((a, b) => a - b),
       }));
     }
-    return !isValid; // Return true if placement was invalid
+    return !isValid;
   }, [hoverPoint, image, originalDimensions, lines]);
 
   const calculateConnections = (row: number, col: number, totalRows: number, totalCols: number): PieceConnection => {

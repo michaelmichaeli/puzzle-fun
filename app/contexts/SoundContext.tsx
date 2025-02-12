@@ -18,10 +18,6 @@ const SoundContext = createContext<SoundContextType | undefined>(undefined);
 class SoundManager {
   private audioContext: AudioContext | null = null;
   private volume: number = 0.5;
-  private musicOscillators: OscillatorNode[] = [];
-  private musicGainNodes: GainNode[] = [];
-  private isMusicPlaying: boolean = false;
-  private currentMusicTimeout: NodeJS.Timeout | null = null;
   
   initialize() {
     if (typeof window === 'undefined') return;
@@ -33,9 +29,6 @@ class SoundManager {
 
   setVolume(value: number) {
     this.volume = Math.max(0, Math.min(1, value));
-    this.musicGainNodes.forEach(gainNode => {
-      gainNode.gain.setValueAtTime(this.volume * 0.2, this.audioContext?.currentTime || 0);
-    });
   }
 
   createOscillator(frequency: number, duration: number, type: OscillatorType = 'sine') {
@@ -57,99 +50,12 @@ class SoundManager {
     oscillator.stop(ctx.currentTime + duration);
   }
 
-  stopBackgroundMusic() {
-    if (this.currentMusicTimeout) {
-      clearTimeout(this.currentMusicTimeout);
-      this.currentMusicTimeout = null;
-    }
-    
-    this.musicOscillators.forEach(osc => {
-      try {
-        osc.stop();
-        osc.disconnect();
-    } catch (error: unknown) {
-        // Ignore already stopped oscillators
-        if (error instanceof DOMException && error.name === 'InvalidStateError') {
-          // Normal case when oscillator is already stopped
-          return;
-        }
-        console.error('Error stopping oscillator:', error);
-      }
-    });
-    
-    this.musicGainNodes.forEach(gain => {
-      try {
-        gain.disconnect();
-    } catch (error: unknown) {
-        // Ignore disconnected nodes
-        if (error instanceof DOMException && error.name === 'InvalidStateError') {
-          // Normal case when node is already disconnected
-          return;
-        }
-        console.error('Error disconnecting node:', error);
-      }
-    });
-    
-    this.musicOscillators = [];
-    this.musicGainNodes = [];
-    this.isMusicPlaying = false;
-  }
-
-  playBackgroundMusic() {
-    if (this.isMusicPlaying) return;
-    
-    const ctx = this.initialize();
-    if (!ctx) return;
-
-    this.stopBackgroundMusic();
-    this.isMusicPlaying = true;
-
-    const notes = [
-      { freq: 329.63, duration: 0.6 }, // E4 - Gentle start
-      { freq: 392.00, duration: 0.6 }, // G4
-      { freq: 440.00, duration: 0.6 }, // A4
-      { freq: 493.88, duration: 0.8 }, // B4 - Longer note
-      { freq: 440.00, duration: 0.6 }, // A4
-      { freq: 392.00, duration: 0.8 }, // G4 - End phrase
-    ];
-
-    let time = ctx.currentTime;
-    notes.forEach(note => {
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.value = note.freq;
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      gainNode.gain.setValueAtTime(this.volume * 0.15, time); // Reduced volume
-      gainNode.gain.exponentialRampToValueAtTime(0.001, time + note.duration);
-      
-      oscillator.start(time);
-      oscillator.stop(time + note.duration);
-      
-      this.musicOscillators.push(oscillator);
-      this.musicGainNodes.push(gainNode);
-      
-      time += note.duration;
-    });
-
-    // Schedule next loop before current one ends
-    const totalDuration = notes.reduce((sum, note) => sum + note.duration, 0);
-    this.currentMusicTimeout = setTimeout(() => {
-      this.isMusicPlaying = false;
-      this.playBackgroundMusic();
-    }, (totalDuration * 1000) - 50); // Start slightly before the end to avoid gaps
-  }
 }
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [volume, setVolume] = useState(0.5);
   const soundManager = useRef(new SoundManager());
-  const musicInterval = useRef<NodeJS.Timeout>();
-
   useEffect(() => {
     const stored = localStorage.getItem('soundEnabled');
     const storedVolume = localStorage.getItem('soundVolume');
@@ -162,36 +68,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       setVolume(vol);
       soundManager.current.setVolume(vol);
     }
-
-    return () => {
-      if (musicInterval.current) {
-        clearInterval(musicInterval.current);
-        soundManager.current.stopBackgroundMusic();
-      }
-    };
-  }, []); // Run only once on mount
-
-  // Separate effect for handling music state changes
-  useEffect(() => {
-    if (musicInterval.current) {
-      clearInterval(musicInterval.current);
-      soundManager.current.stopBackgroundMusic();
-    }
-
-    if (isSoundEnabled) {
-      soundManager.current.playBackgroundMusic();
-      musicInterval.current = setInterval(() => {
-        soundManager.current.playBackgroundMusic();
-      }, 12000); // Longer interval between loops
-    }
-
-    return () => {
-      if (musicInterval.current) {
-        clearInterval(musicInterval.current);
-        soundManager.current.stopBackgroundMusic();
-      }
-    };
-  }, [isSoundEnabled]);
+  }, []);
 
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);

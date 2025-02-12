@@ -62,7 +62,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
   }, [solution]);
 
   const getGridCellCoordinates = useCallback((row: number, col: number, targetPieceId: number) => {
-    // Calculate total grid dimensions
     let totalWidth = 0;
     let totalHeight = 0;
     
@@ -76,30 +75,25 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       if (rowPiece) totalHeight += rowPiece.height;
     }
 
-    // Center the grid
     const containerWidth = document.getElementById('puzzle-board')?.clientWidth || 1000;
     const containerHeight = document.getElementById('puzzle-board')?.clientHeight || 800;
     const startX = (containerWidth - totalWidth) / 2;
     const startY = (containerHeight - totalHeight) / 2;
 
-    // Calculate x position by summing widths of pieces in previous columns
     let x = startX;
     for (let c = 0; c < col; c++) {
       const colPiece = pieces.find(p => solution.grid[row][c] === p.id);
       if (colPiece) x += colPiece.width;
     }
 
-    // Calculate y position by summing heights of pieces in previous rows
     let y = startY;
     for (let r = 0; r < row; r++) {
       const rowPiece = pieces.find(p => solution.grid[r][col] === p.id);
       if (rowPiece) y += rowPiece.height;
     }
 
-    // Adjust for target piece dimensions
     const targetPiece = pieces.find(p => p.id === targetPieceId);
     if (targetPiece) {
-      // Center the piece in its cell
       const currentCellPiece = pieces.find(p => solution.grid[row][col] === p.id);
       if (currentCellPiece) {
         x += (currentCellPiece.width - targetPiece.width) / 2;
@@ -110,11 +104,10 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     return { x, y };
   }, [solution.grid, solution.cols, solution.rows, pieces]);
 
-  // Calculate snap threshold based on piece size
   const getSnapThreshold = useCallback((pieceId: number) => {
     const piece = pieces.find(p => p.id === pieceId);
-    if (!piece) return 30; // default
-    return Math.min(piece.width, piece.height) * 0.25; // 25% of smallest dimension
+    if (!piece) return 30;
+    return Math.min(piece.width, piece.height) * 0.25;
   }, [pieces]);
 
   const onPieceMove = useCallback((pieceId: number, x: number, y: number) => {
@@ -144,7 +137,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       const pos = positions[piece.id];
       if (!pos) return;
 
-      // Find the closest grid cell
       let bestRow = -1;
       let bestCol = -1;
       let minDistance = Infinity;
@@ -207,16 +199,17 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
 
     for (let row = 0; row < solution.rows; row++) {
       for (let col = 0; col < solution.cols; col++) {
-        if (solution.grid[row][col] !== null) {
+        const expected = solution.grid[row][col];
+        if (expected !== null) {
           totalPieces++;
-          if (currentMatrix.grid[row][col] === solution.grid[row][col]) {
+          if (currentMatrix.grid[row][col] === expected) {
             correctPieces++;
           }
         }
       }
     }
 
-    return totalPieces > 0 ? Math.round((correctPieces / totalPieces) * 100) : 0;
+    return totalPieces > 0 ? correctPieces / totalPieces : 0;
   }, [getCurrentMatrix, solution]);
 
   const restart = useCallback(() => {

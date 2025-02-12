@@ -49,7 +49,7 @@ export const scaleDownCanvas = (
   const scale = Math.min(
     maxSize / canvas.width,
     maxSize / canvas.height,
-    1 // Don't scale up, only down
+    1
   );
 
   if (scale >= 1) return canvas;
