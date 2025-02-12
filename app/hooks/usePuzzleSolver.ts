@@ -17,7 +17,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     const avgPieceHeight = pieces[0]?.height || 0;
     const piecesPerRow = Math.ceil(Math.sqrt(pieces.length));
     
-    // Create a shuffled array of positions
     const indices = Array.from({ length: pieces.length }, (_, i) => i);
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -131,16 +130,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
 
     const finalPosition = distance < snapThreshold ? expectedPos : { x, y };
 
-    console.log(`Piece ${pieceId} movement:`, {
-      currentPosition: { x, y },
-      calculatedGridPos: { row: Math.floor(y / pieces[0].height), col: Math.floor(x / pieces[0].width) },
-      expectedGridPos: { row: expectedCell.row, col: expectedCell.col },
-      targetPosition: expectedPos,
-      distance,
-      snapThreshold,
-      willSnap: distance < snapThreshold
-    });
-
     setPositions(prev => ({
       ...prev,
       [pieceId]: finalPosition
@@ -148,9 +137,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
   }, [pieces, findExpectedCell, getGridCellCoordinates, getSnapThreshold]);
 
   const getCurrentMatrix = useCallback((): BoardMatrix => {
-    console.log('Current Positions:', positions);
-    console.log('Pieces:', pieces);
-    
     const matrix: number[][] = Array(solution.rows).fill(null)
       .map(() => Array(solution.cols).fill(null));
 
@@ -202,18 +188,12 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
         const current = currentMatrix.grid[row][col];
         const expected = solution.grid[row][col];
         if (current !== expected) {
-          console.log(`Mismatch at [${row},${col}]:`, {
-            current,
-            expected,
-            piece: pieces.find(p => p.id === current)
-          });
           isCorrect = false;
         }
       }
     }
     
     if (isCorrect) {
-      console.log('Puzzle solved! 🎉');
       setIsGameCompleted(true);
     }
     

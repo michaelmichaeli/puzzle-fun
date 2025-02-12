@@ -42,7 +42,6 @@ const PuzzleEditor: React.FC<PuzzleEditorProps> = ({ imageUrl }) => {
       setTitle(data.title);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      console.error("Error generating AI content:", errorMessage);
       setError(errorMessage);
     } finally {
       setIsGeneratingAiContent(false);

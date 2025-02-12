@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (!process.env.CLARIFAI_PAT) {
-      console.error("Clarifai PAT is not configured");
       return new Response("Server configuration error", { status: 500 });
     }
 
@@ -28,7 +27,6 @@ export async function POST(req: NextRequest) {
       const response = await clarifai.predictImage(imageUrl, MODEL_ID, MODEL_VERSION_ID);
 
       if (!response.outputs?.[0]?.data?.concepts) {
-        console.error("Unexpected Clarifai response format:", response);
         return new Response("Invalid response from Clarifai", { status: 500 });
       }
 
@@ -48,12 +46,10 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
       });
     } catch (error: unknown) {
-      console.error("Error calling Clarifai API:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       return new Response(`Error calling Clarifai API: ${errorMessage}`, { status: 500 });
     }
-  } catch (error) {
-    console.error("Server error:", error);
+  } catch {
     return new Response("Invalid request body", { status: 400 });
   }
 }

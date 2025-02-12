@@ -10,7 +10,6 @@ interface PuzzleGridProps {
 }
 
 export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, currentPositions }) => {
-  // Find piece dimensions for each grid position
   const pieceDimensions = useMemo(() => {
     const dimensions: { [key: string]: { width: number; height: number } } = {};
     for (let row = 0; row < solution.rows; row++) {
@@ -30,7 +29,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
     return dimensions;
   }, [solution.grid, pieces, solution.rows, solution.cols]);
 
-  // Calculate total grid dimensions
   const gridDimensions = useMemo(() => {
     let maxWidth = 0;
     let totalHeight = 0;
@@ -53,7 +51,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
     return { width: maxWidth, height: totalHeight };
   }, [pieceDimensions, solution.rows, solution.cols]);
 
-  // Calculate grid style with flexible layout
   const gridStyle = useMemo(() => {
     return {
       display: "flex",
@@ -70,7 +67,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
     };
   }, [gridDimensions]);
 
-  // Calculate which cells are currently filled
   const filledCells = useMemo(() => {
     const filled: { [key: string]: number } = {};
     Object.entries(currentPositions).forEach(([id, pos]) => {
@@ -78,7 +74,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
       let nearestCol = -1;
       let minDistance = Infinity;
 
-      // Find the nearest grid cell
       for (let row = 0; row < solution.rows; row++) {
         for (let col = 0; col < solution.cols; col++) {
           const dims = pieceDimensions[`${row}-${col}`];
@@ -104,7 +99,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
     return filled;
   }, [currentPositions, pieceDimensions, solution.rows, solution.cols]);
 
-  // Create grid rows and cells
   const rows = useMemo(() => {
     const result = [];
     for (let row = 0; row < solution.rows; row++) {
@@ -148,7 +142,7 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
       className="pointer-events-none select-none" 
       style={{
         ...gridStyle,
-        zIndex: 5,  // Ensure grid stays below pieces
+        zIndex: 5,
         pointerEvents: 'none',
         userSelect: 'none',
         WebkitUserSelect: 'none',

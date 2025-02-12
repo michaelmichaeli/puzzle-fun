@@ -74,7 +74,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
           className="relative transition-shadow duration-200 rounded-sm"
           style={{
             boxShadow: isNearTarget 
-              ? '0 0 15px rgba(34,197,94,0.4)' // green glow when near target
+              ? '0 0 15px rgba(34,197,94,0.4)'
               : isDragging 
                 ? '0 0 20px rgba(0,0,0,0.4)' 
                 : 'none'

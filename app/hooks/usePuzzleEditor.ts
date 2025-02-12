@@ -11,15 +11,12 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   const drawLines = useCallback((ctx: CanvasRenderingContext2D) => {
     if (!image) return;
 
-    // Clear the canvas and redraw the image
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.drawImage(image, 0, 0);
 
-    // Draw existing lines
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
 
-    // Draw horizontal lines
     lines.horizontal.forEach(y => {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -27,7 +24,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       ctx.stroke();
     });
 
-    // Draw vertical lines
     lines.vertical.forEach(x => {
       ctx.beginPath();
       ctx.moveTo(x, 0);
@@ -35,18 +31,15 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       ctx.stroke();
     });
 
-    // Draw hover guidelines if hovering
     if (hoverPoint) {
       ctx.strokeStyle = '#00ff00';
       ctx.setLineDash([5, 5]);
 
-      // Horizontal guideline
       ctx.beginPath();
       ctx.moveTo(0, hoverPoint.y);
       ctx.lineTo(ctx.canvas.width, hoverPoint.y);
       ctx.stroke();
 
-      // Vertical guideline
       ctx.beginPath();
       ctx.moveTo(hoverPoint.x, 0);
       ctx.lineTo(hoverPoint.x, ctx.canvas.height);
@@ -118,14 +111,12 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     const newPieces: Piece[] = [];
     let id = 0;
 
-    // Add image boundaries
     const allVertical = [0, ...vertical, image.width];
     const allHorizontal = [0, ...horizontal, image.height];
 
     const totalRows = allHorizontal.length - 1;
     const totalCols = allVertical.length - 1;
 
-    // Create pieces from grid
     for (let row = 0; row < totalRows; row++) {
       for (let col = 0; col < totalCols; col++) {
         const x = allVertical[col];
@@ -133,14 +124,12 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
         const width = allVertical[col + 1] - x;
         const height = allHorizontal[row + 1] - y;
 
-        // Create a canvas for this piece
         const pieceCanvas = document.createElement('canvas');
         pieceCanvas.width = width;
         pieceCanvas.height = height;
         const pieceCtx = pieceCanvas.getContext('2d');
 
         if (pieceCtx) {
-          // Draw the portion of the image for this piece
           pieceCtx.drawImage(
             image,
             x, y, width, height,
