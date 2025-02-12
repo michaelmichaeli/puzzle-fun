@@ -20,6 +20,9 @@ const comicNeue = Comic_Neue({
 export const metadata: Metadata = {
   title: "PuzzleFun! - Create and Play Puzzles",
   description: "Create your own custom puzzles, play and have fun!",
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({

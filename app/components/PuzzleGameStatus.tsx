@@ -15,11 +15,11 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
 
   const getProgressGradient = () => {
     if (progress <= 0.33) {
-      return 'from-[#4DB2EC] via-[#FFD800] to-[#4DB2EC]';
+      return 'from-[#FF69B4] via-[#4DB2EC] to-[#FF69B4]';
     } else if (progress <= 0.66) {
-      return 'from-[#FFD800] via-[#4DB2EC] to-[#FFD800]';
+      return 'from-[#4DB2EC] via-[#87CEEB] to-[#4DB2EC]';
     }
-    return 'from-[#4DB2EC] via-[#FFD800] to-[#4DB2EC]';
+    return 'from-[#87CEEB] via-[#4CAF50] to-[#87CEEB]';
   };
 
   const getMotivationalMessage = () => {
