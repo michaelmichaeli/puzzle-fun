@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Puzzle, PieceData } from "@/types/puzzle";
 import { PuzzleSolver } from "@/app/components/PuzzleSolver";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 
 interface PlayPageProps {
   params: { id: string };
@@ -42,15 +43,18 @@ export default function PlayPage({ params }: PlayPageProps) {
 
   if (!puzzle) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div className="text-xl">Loading puzzle...</div>
+      <div className="min-h-screen bg-gray-900 text-white">
+        <div className="flex flex-col items-center justify-center h-screen space-y-6">
+          <LoadingSpinner size="lg" />
+          <div className="text-xl font-medium animate-pulse">Loading puzzle...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <div className="flex justify-between items-start mb-8">
+    <div className="min-h-screen bg-gray-900 text-white p-4 animate-fadeIn">
+      <div className="flex justify-between items-start mb-8 animate-slideDown">
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">{puzzle.title}</h1>
           {puzzle.aiContent && (
@@ -62,7 +66,7 @@ export default function PlayPage({ params }: PlayPageProps) {
         </div>
       </div>
       
-      <div className="relative rounded-lg overflow-hidden shadow-xl mt-4">
+      <div className="relative rounded-lg overflow-hidden shadow-xl mt-4 animate-slideUp">
         {puzzle.pieces && puzzle.pieces.length > 0 && puzzle.solution ? (
           <PuzzleSolver pieces={puzzle.pieces} solution={puzzle.solution} />
         ) : (

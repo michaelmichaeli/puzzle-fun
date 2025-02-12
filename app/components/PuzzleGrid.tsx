@@ -9,7 +9,11 @@ interface PuzzleGridProps {
   currentPositions: { [id: number]: { x: number; y: number } };
 }
 
-export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, currentPositions }) => {
+export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ 
+  solution, 
+  pieces, 
+  currentPositions
+}) => {
   const pieceDimensions = useMemo(() => {
     const dimensions: { [key: string]: { width: number; height: number } } = {};
     for (let row = 0; row < solution.rows; row++) {
@@ -51,21 +55,19 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
     return { width: maxWidth, height: totalHeight };
   }, [pieceDimensions, solution.rows, solution.cols]);
 
-  const gridStyle = useMemo(() => {
-    return {
-      display: "flex",
-      flexDirection: "column" as const,
-      position: "absolute" as const,
-      left: "50%",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-      padding: "8px",
-      zIndex: 0,
-      gap: "1px",
-      width: gridDimensions.width,
-      height: gridDimensions.height,
-    };
-  }, [gridDimensions]);
+  const gridStyle = useMemo(() => ({
+    display: "flex",
+    flexDirection: "column" as const,
+    position: "absolute" as const,
+    left: "50%",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+    padding: "8px",
+    zIndex: 0,
+    gap: "2px",
+    width: gridDimensions.width,
+    height: gridDimensions.height
+  }), [gridDimensions]);
 
   const filledCells = useMemo(() => {
     const filled: { [key: string]: number } = {};
@@ -110,20 +112,25 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
         rowCells.push(
           <div
             key={`${row}-${col}`}
-            className="relative border border-gray-700 bg-gray-800/20 transition-all duration-200"
+            className={`relative border}`}
             style={{
               width: dims.width,
-              height: dims.height,
+              height: dims.height
             }}
           >
-            <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 text-sm">
+            <span 
+              className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm`}
+            >
               {pieceId !== null ? pieceId : ""}
             </span>
           </div>
         );
       }
       result.push(
-      <div key={row} className="flex gap-1 justify-center items-center">
+        <div 
+          key={row} 
+          className="flex gap-1 justify-center items-center"
+        >
           {rowCells}
         </div>
       );
@@ -133,15 +140,8 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces, curren
 
   return (
     <div 
-      className="pointer-events-none select-none" 
-      style={{
-        ...gridStyle,
-        zIndex: 5,
-        pointerEvents: 'none',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        touchAction: 'none'
-      }}
+      style={gridStyle}
+      className="pointer-events-none select-none touch-none"
     >
       {rows}
     </div>

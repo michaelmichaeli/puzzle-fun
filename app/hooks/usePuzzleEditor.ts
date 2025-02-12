@@ -7,47 +7,114 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   const [hoverPoint, setHoverPoint] = useState<Point | null>(null);
   const [lines, setLines] = useState<Lines>({ horizontal: [], vertical: [] });
   const [pieces, setPieces] = useState<Piece[]>([]);
+  const [scale, setScale] = useState(1);
+  const [originalDimensions, setOriginalDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const drawLines = useCallback((ctx: CanvasRenderingContext2D) => {
-    if (!image) return;
+    if (!image || !originalDimensions) return;
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.drawImage(image, 0, 0);
+    ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
 
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
 
+    // Draw existing lines
     lines.horizontal.forEach(y => {
+      const scaledY = y * scale;
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(ctx.canvas.width, y);
+      ctx.moveTo(0, scaledY);
+      ctx.lineTo(ctx.canvas.width, scaledY);
       ctx.stroke();
     });
 
     lines.vertical.forEach(x => {
+      const scaledX = x * scale;
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, ctx.canvas.height);
+      ctx.moveTo(scaledX, 0);
+      ctx.lineTo(scaledX, ctx.canvas.height);
       ctx.stroke();
     });
 
+    // Draw hover lines with color feedback
     if (hoverPoint) {
-      ctx.strokeStyle = '#00ff00';
-      ctx.setLineDash([5, 5]);
+      const x = (hoverPoint.x / ctx.canvas.width) * originalDimensions.width;
+      const y = (hoverPoint.y / ctx.canvas.height) * originalDimensions.height;
+      
+      const threshold = originalDimensions.width * 0.03; // 3% of image width
+      const edgeThreshold = threshold;
+      const isTooCloseToEdge = 
+        x < edgeThreshold || 
+        x > originalDimensions.width - edgeThreshold ||
+        y < edgeThreshold || 
+        y > originalDimensions.height - edgeThreshold;
+      
+      const nearestVertical = lines.vertical.reduce((nearest, vx) => {
+        const dist = Math.abs(vx - x);
+        return dist < Math.abs(nearest - x) ? vx : nearest;
+      }, x);
 
-      ctx.beginPath();
-      ctx.moveTo(0, hoverPoint.y);
-      ctx.lineTo(ctx.canvas.width, hoverPoint.y);
-      ctx.stroke();
+      const nearestHorizontal = lines.horizontal.reduce((nearest, vy) => {
+        const dist = Math.abs(vy - y);
+        return dist < Math.abs(nearest - y) ? vy : nearest;
+      }, y);
 
-      ctx.beginPath();
-      ctx.moveTo(hoverPoint.x, 0);
-      ctx.lineTo(hoverPoint.x, ctx.canvas.height);
-      ctx.stroke();
+      const existingVertical = Math.abs(nearestVertical - x) < threshold;
+      const existingHorizontal = Math.abs(nearestHorizontal - y) < threshold;
 
-      ctx.setLineDash([]);
+      // Draw invalid placement indicator
+      if (isTooCloseToEdge || existingVertical || existingHorizontal) {
+        ctx.strokeStyle = '#ff4444';
+        ctx.fillStyle = '#ff444420';
+        ctx.setLineDash([5, 5]);
+
+        // Highlight nearby lines
+        if (existingVertical) {
+          const nearX = nearestVertical * scale;
+          ctx.fillRect(nearX - threshold * scale / 2, 0, threshold * scale, ctx.canvas.height);
+        }
+        if (existingHorizontal) {
+          const nearY = nearestHorizontal * scale;
+          ctx.fillRect(0, nearY - threshold * scale / 2, ctx.canvas.width, threshold * scale);
+        }
+
+        if (isTooCloseToEdge) {
+          ctx.fillRect(0, 0, ctx.canvas.width, edgeThreshold * scale);
+          ctx.fillRect(0, ctx.canvas.height - edgeThreshold * scale, ctx.canvas.width, edgeThreshold * scale);
+          ctx.fillRect(0, 0, edgeThreshold * scale, ctx.canvas.height);
+          ctx.fillRect(ctx.canvas.width - edgeThreshold * scale, 0, edgeThreshold * scale, ctx.canvas.height);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(0, hoverPoint.y);
+        ctx.lineTo(ctx.canvas.width, hoverPoint.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(hoverPoint.x, 0);
+        ctx.lineTo(hoverPoint.x, ctx.canvas.height);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+      } else {
+        // Draw valid placement indicator
+        ctx.strokeStyle = '#00ff00';
+        ctx.setLineDash([5, 5]);
+
+        ctx.beginPath();
+        ctx.moveTo(0, hoverPoint.y);
+        ctx.lineTo(ctx.canvas.width, hoverPoint.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(hoverPoint.x, 0);
+        ctx.lineTo(hoverPoint.x, ctx.canvas.height);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+      }
     }
-  }, [image, lines, hoverPoint]);
+  }, [image, lines, hoverPoint, scale, originalDimensions]);
 
   useEffect(() => {
     if (imageUrl) {
@@ -56,44 +123,81 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       img.crossOrigin = "Anonymous";
       img.onload = () => {
         setImage(img);
+        setOriginalDimensions({ width: img.width, height: img.height });
+
         if (canvasRef.current) {
-          canvasRef.current.width = img.width;
-          canvasRef.current.height = img.height;
-          const ctx = canvasRef.current.getContext('2d');
-          if (ctx) {
-            drawLines(ctx);
+          const container = document.getElementById('puzzle-board');
+          if (container) {
+            const containerWidth = container.clientWidth - 32;
+            const containerHeight = container.clientHeight - 32;
+            const newScale = Math.min(
+              containerWidth / img.width,
+              containerHeight / img.height
+            );
+            setScale(newScale);
+
+            canvasRef.current.width = img.width * newScale;
+            canvasRef.current.height = img.height * newScale;
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, img.width * newScale, img.height * newScale);
+              drawLines(ctx);
+            }
           }
         }
       };
     }
-  }, [imageUrl]);
+  }, [imageUrl, drawLines]);
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
-    if (ctx) {
+    if (ctx && image) {
       drawLines(ctx);
     }
-  }, [drawLines, image, lines, hoverPoint]);
+  }, [drawLines, image, lines, hoverPoint, scale]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !image || !originalDimensions) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    setHoverPoint({ x, y });
-  }, []);
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
+      setHoverPoint({ x, y });
+    } else {
+      setHoverPoint(null);
+    }
+  }, [image, originalDimensions]);
 
   const handleClick = useCallback(() => {
-    if (!hoverPoint || !image) return;
+    if (!hoverPoint || !image || !originalDimensions || !canvasRef.current) return false;
 
-    setLines(prev => ({
-      horizontal: [...prev.horizontal, hoverPoint.y].sort((a, b) => a - b),
-      vertical: [...prev.vertical, hoverPoint.x].sort((a, b) => a - b),
-    }));
-  }, [hoverPoint, image]);
+    const x = (hoverPoint.x / canvasRef.current.width) * originalDimensions.width;
+    const y = (hoverPoint.y / canvasRef.current.height) * originalDimensions.height;
+
+    // Check if the new line would be too close to existing lines or edges
+    const threshold = originalDimensions.width * 0.03; // 3% of image width
+    const existingVertical = lines.vertical.find(vx => Math.abs(vx - x) < threshold);
+    const existingHorizontal = lines.horizontal.find(vy => Math.abs(vy - y) < threshold);
+
+    const edgeThreshold = threshold;
+    const isTooCloseToEdge = 
+      x < edgeThreshold || 
+      x > originalDimensions.width - edgeThreshold ||
+      y < edgeThreshold || 
+      y > originalDimensions.height - edgeThreshold;
+
+    const isValid = !isTooCloseToEdge && (!existingVertical || !existingHorizontal);
+    if (isValid) {
+      setLines(prev => ({
+        horizontal: existingHorizontal ? prev.horizontal : [...prev.horizontal, y].sort((a, b) => a - b),
+        vertical: existingVertical ? prev.vertical : [...prev.vertical, x].sort((a, b) => a - b),
+      }));
+    }
+    return !isValid; // Return true if placement was invalid
+  }, [hoverPoint, image, originalDimensions, lines]);
 
   const calculateConnections = (row: number, col: number, totalRows: number, totalCols: number): PieceConnection => {
     return {
@@ -105,14 +209,22 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   };
 
   const breakImage = useCallback(() => {
-    if (!image || !canvasRef.current) return;
+    if (!image || !canvasRef.current || !originalDimensions) return;
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = originalDimensions.width;
+    tempCanvas.height = originalDimensions.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (!tempCtx) return;
+    tempCtx.drawImage(image, 0, 0);
 
     const { horizontal, vertical } = lines;
     const newPieces: Piece[] = [];
     let id = 0;
 
-    const allVertical = [0, ...vertical, image.width];
-    const allHorizontal = [0, ...horizontal, image.height];
+    const allVertical = [0, ...vertical.filter(x => x >= 0 && x <= originalDimensions.width), originalDimensions.width];
+    const allHorizontal = [0, ...horizontal.filter(y => y >= 0 && y <= originalDimensions.height), originalDimensions.height];
 
     const totalRows = allHorizontal.length - 1;
     const totalCols = allVertical.length - 1;
@@ -131,7 +243,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
 
         if (pieceCtx) {
           pieceCtx.drawImage(
-            image,
+            tempCanvas,
             x, y, width, height,
             0, 0, width, height
           );
@@ -154,14 +266,21 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     }
 
     setPieces(newPieces);
-  }, [image, lines]);
+  }, [image, lines, originalDimensions]);
+
+  const resetLines = useCallback(() => {
+    setLines({ horizontal: [], vertical: [] });
+    setPieces([]);
+  }, []);
 
   return {
     canvasRef,
     image,
     pieces,
+    lines,
     handleMouseMove,
     handleClick,
     breakImage,
+    resetLines,
   };
 };

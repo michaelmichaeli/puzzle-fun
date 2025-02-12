@@ -8,42 +8,60 @@ import { resizeImage } from "@/app/utils/imageUtils";
 
 export default function CreatePuzzlePage() {
 	const [imageSrc, setImageSrc] = useState<string | null>(null);
+	const [error, setError] = useState<string | null>(null);
 	const imageContainerRef = useRef<HTMLDivElement | null>(null);
 
-const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const file = event.target.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const originalSrc = e.target?.result as string;
-      try {
-        const resizedSrc = await resizeImage(originalSrc);
-        setImageSrc(resizedSrc);
-      } catch (error) {
-        console.error('Error resizing image:', error);
-        setImageSrc(originalSrc); // Fallback to original if resize fails
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-};
+	const handleImageChange = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const file = event.target.files?.[0];
+		if (file) {
+			setError(null);
+
+			try {
+				const reader = new FileReader();
+				const originalSrc = await new Promise<string>((resolve, reject) => {
+					reader.onload = (e) => resolve(e.target?.result as string);
+					reader.onerror = reject;
+					reader.readAsDataURL(file);
+				});
+
+				const resizedSrc = await resizeImage(originalSrc);
+				setImageSrc(resizedSrc);
+			} catch (error) {
+				console.error("Error processing image:", error);
+				setError("Failed to process image. Please try again.");
+				setImageSrc(null);
+			}
+		}
+	};
 
 	return (
-<div>
-<BackButton />
-<div className="p-4 mx-auto">
-<h1 className="text-2xl mb-4">Create Puzzle</h1>
-			{imageSrc ? (
-				<div
-					ref={imageContainerRef}
-					style={{ position: "relative" }}
-				>
-					<PuzzleEditor imageUrl={imageSrc} />
+		<div className="min-h-screen bg-gray-900 text-white">
+			<div className="p-4 mx-auto animate-fadeIn">
+				<div className="mb-8 animate-slideDown">
+					<BackButton />
+					<h1 className="text-2xl font-bold mt-4">Create Puzzle</h1>
 				</div>
-			) : (
-				<UploadImage handleImageChange={handleImageChange} />
-)}
-</div>
-</div>
+				<div className="animate-slideUp">
+					{error && (
+						<div className="text-red-500 mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+							{error}
+						</div>
+					)}
+
+					{imageSrc ? (
+						<div
+							ref={imageContainerRef}
+							className="transition-all duration-300"
+						>
+							<PuzzleEditor imageUrl={imageSrc} />
+						</div>
+					) : (
+						<UploadImage handleImageChange={handleImageChange} />
+					)}
+				</div>
+			</div>
+		</div>
 	);
 }
