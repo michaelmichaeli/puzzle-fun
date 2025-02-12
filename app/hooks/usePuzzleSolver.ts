@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { PieceData, BoardMatrix } from "@/types/puzzle";
 
 interface UsePuzzleSolverProps {
@@ -6,60 +6,9 @@ interface UsePuzzleSolverProps {
   solution: BoardMatrix;
 }
 
-interface GridCell {
-  x: number;
-  y: number;
-}
-
 export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
   const [positions, setPositions] = useState<{ [id: number]: { x: number; y: number } }>({});
-  const boardRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
-
-  const calculateGridCells = useCallback((): GridCell[][] => {
-    const cellSize = pieces[0]?.width || 100;
-    const cells: GridCell[][] = [];
-    
-    const startX = (boardRef.current.width - (cellSize * solution.cols)) / 2;
-    const startY = (boardRef.current.height - (cellSize * solution.rows)) / 2;
-    
-    for (let row = 0; row < solution.rows; row++) {
-      cells[row] = [];
-      for (let col = 0; col < solution.cols; col++) {
-        cells[row][col] = {
-          x: startX + (col * cellSize),
-          y: startY + (row * cellSize)
-        };
-      }
-    }
-    
-    return cells;
-  }, [pieces, solution.rows, solution.cols]);
-
-  const findNearestCell = useCallback((x: number, y: number, pieceId: number): { x: number; y: number } | null => {
-    const grid = calculateGridCells();
-    const cellSize = pieces[0]?.width || 100;
-    const snapThreshold = cellSize * 0.2; // 20% of cell size
-    
-    let nearestCell: { x: number; y: number } | null = null;
-    let minDistance = Infinity;
-
-    for (let row = 0; row < solution.rows; row++) {
-      for (let col = 0; col < solution.cols; col++) {
-        const cell = grid[row][col];
-        const distance = Math.sqrt(Math.pow(x - cell.x, 2) + Math.pow(y - cell.y, 2));
-        
-        if (distance < minDistance && distance < snapThreshold) {
-          // Only snap if this is the correct position for this piece
-          if (solution.grid[row][col] === pieceId) {
-            minDistance = distance;
-            nearestCell = cell;
-          }
-        }
-      }
-    }
-    
-    return nearestCell;
-  }, [calculateGridCells, pieces, solution.grid, solution.rows, solution.cols]);
+  const [isGameCompleted, setIsGameCompleted] = useState(false);
 
   const shufflePieces = useCallback((containerWidth: number, containerHeight: number) => {
     const padding = 20;
@@ -97,53 +46,140 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     setPositions(newPositions);
   }, [pieces]);
 
-  const onPieceMove = useCallback((pieceId: number, x: number, y: number, boardWidth: number, boardHeight: number) => {
-    // Update board dimensions
-    boardRef.current = { width: boardWidth, height: boardHeight };
+  const findExpectedCell = useCallback((pieceId: number) => {
+    let expectedRow = -1;
+    let expectedCol = -1;
 
-    // Check for snapping
-    const nearestCell = findNearestCell(x, y, pieceId);
-    const finalPosition = nearestCell || { x, y };
+    for (let row = 0; row < solution.rows; row++) {
+      const col = solution.grid[row].indexOf(pieceId);
+      if (col !== -1) {
+        expectedRow = row;
+        expectedCol = col;
+        break;
+      }
+    }
+
+    return { row: expectedRow, col: expectedCol };
+  }, [solution]);
+
+  const getGridCellCoordinates = useCallback((row: number, col: number, targetPieceId: number) => {
+    // Calculate total grid dimensions
+    let totalWidth = 0;
+    let totalHeight = 0;
+    
+    for (let c = 0; c < solution.cols; c++) {
+      const colPiece = pieces.find(p => solution.grid[0][c] === p.id);
+      if (colPiece) totalWidth += colPiece.width;
+    }
+    
+    for (let r = 0; r < solution.rows; r++) {
+      const rowPiece = pieces.find(p => solution.grid[r][0] === p.id);
+      if (rowPiece) totalHeight += rowPiece.height;
+    }
+
+    // Center the grid
+    const containerWidth = document.getElementById('puzzle-board')?.clientWidth || 1000;
+    const containerHeight = document.getElementById('puzzle-board')?.clientHeight || 800;
+    const startX = (containerWidth - totalWidth) / 2;
+    const startY = (containerHeight - totalHeight) / 2;
+
+    // Calculate x position by summing widths of pieces in previous columns
+    let x = startX;
+    for (let c = 0; c < col; c++) {
+      const colPiece = pieces.find(p => solution.grid[row][c] === p.id);
+      if (colPiece) x += colPiece.width;
+    }
+
+    // Calculate y position by summing heights of pieces in previous rows
+    let y = startY;
+    for (let r = 0; r < row; r++) {
+      const rowPiece = pieces.find(p => solution.grid[r][col] === p.id);
+      if (rowPiece) y += rowPiece.height;
+    }
+
+    // Adjust for target piece dimensions
+    const targetPiece = pieces.find(p => p.id === targetPieceId);
+    if (targetPiece) {
+      // Center the piece in its cell
+      const currentCellPiece = pieces.find(p => solution.grid[row][col] === p.id);
+      if (currentCellPiece) {
+        x += (currentCellPiece.width - targetPiece.width) / 2;
+        y += (currentCellPiece.height - targetPiece.height) / 2;
+      }
+    }
+
+    return { x, y };
+  }, [solution.grid, solution.cols, solution.rows, pieces]);
+
+  // Calculate snap threshold based on piece size
+  const getSnapThreshold = useCallback((pieceId: number) => {
+    const piece = pieces.find(p => p.id === pieceId);
+    if (!piece) return 30; // default
+    return Math.min(piece.width, piece.height) * 0.25; // 25% of smallest dimension
+  }, [pieces]);
+
+  const onPieceMove = useCallback((pieceId: number, x: number, y: number) => {
+    const expectedCell = findExpectedCell(pieceId);
+    if (expectedCell.row === -1 || expectedCell.col === -1) return;
+
+    const expectedPos = getGridCellCoordinates(expectedCell.row, expectedCell.col, pieceId);
+    const snapThreshold = getSnapThreshold(pieceId);
+    const distance = Math.sqrt(
+      Math.pow(x - expectedPos.x, 2) + 
+      Math.pow(y - expectedPos.y, 2)
+    );
+
+    const finalPosition = distance < snapThreshold ? expectedPos : { x, y };
+
+    console.log(`Piece ${pieceId} movement:`, {
+      currentPosition: { x, y },
+      calculatedGridPos: { row: Math.floor(y / pieces[0].height), col: Math.floor(x / pieces[0].width) },
+      expectedGridPos: { row: expectedCell.row, col: expectedCell.col },
+      targetPosition: expectedPos,
+      distance,
+      snapThreshold,
+      willSnap: distance < snapThreshold
+    });
 
     setPositions(prev => ({
       ...prev,
       [pieceId]: finalPosition
     }));
-  }, [findNearestCell]);
+  }, [pieces, findExpectedCell, getGridCellCoordinates, getSnapThreshold]);
 
   const getCurrentMatrix = useCallback((): BoardMatrix => {
-    const cellSize = pieces[0]?.width || 100;
-    const grid = calculateGridCells();
+    console.log('Current Positions:', positions);
+    console.log('Pieces:', pieces);
+    
     const matrix: number[][] = Array(solution.rows).fill(null)
       .map(() => Array(solution.cols).fill(null));
 
     pieces.forEach(piece => {
-      const piecePos = positions[piece.id];
-      if (!piecePos) return;
+      const pos = positions[piece.id];
+      if (!pos) return;
 
-      // Find the closest grid cell to this piece's position
+      // Find the closest grid cell
       let bestRow = -1;
       let bestCol = -1;
-      let bestDistance = Infinity;
+      let minDistance = Infinity;
 
       for (let row = 0; row < solution.rows; row++) {
         for (let col = 0; col < solution.cols; col++) {
-          const cell = grid[row][col];
+          const cellPos = getGridCellCoordinates(row, col, piece.id);
           const distance = Math.sqrt(
-            Math.pow(piecePos.x - cell.x, 2) + 
-            Math.pow(piecePos.y - cell.y, 2)
+            Math.pow(pos.x - cellPos.x, 2) + 
+            Math.pow(pos.y - cellPos.y, 2)
           );
           
-          if (distance < bestDistance) {
-            bestDistance = distance;
+          if (distance < minDistance) {
+            minDistance = distance;
             bestRow = row;
             bestCol = col;
           }
         }
       }
 
-      // Only assign the piece if it's close enough to a grid cell
-      if (bestDistance < cellSize / 2 && bestRow >= 0 && bestCol >= 0) {
+      if (bestRow >= 0 && bestCol >= 0) {
         matrix[bestRow][bestCol] = piece.id;
       }
     });
@@ -153,21 +189,36 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       cols: solution.cols,
       grid: matrix
     };
-  }, [pieces, positions, solution.rows, solution.cols, calculateGridCells]);
+  }, [pieces, positions, solution.rows, solution.cols, getGridCellCoordinates]);
 
   const isSolved = useCallback(() => {
+    if (isGameCompleted) return true;
+    
     const currentMatrix = getCurrentMatrix();
     
+    let isCorrect = true;
     for (let row = 0; row < solution.rows; row++) {
       for (let col = 0; col < solution.cols; col++) {
-        if (currentMatrix.grid[row][col] !== solution.grid[row][col]) {
-          return false;
+        const current = currentMatrix.grid[row][col];
+        const expected = solution.grid[row][col];
+        if (current !== expected) {
+          console.log(`Mismatch at [${row},${col}]:`, {
+            current,
+            expected,
+            piece: pieces.find(p => p.id === current)
+          });
+          isCorrect = false;
         }
       }
     }
     
-    return true;
-  }, [getCurrentMatrix, solution]);
+    if (isCorrect) {
+      console.log('Puzzle solved! 🎉');
+      setIsGameCompleted(true);
+    }
+    
+    return isCorrect;
+  }, [getCurrentMatrix, solution, pieces, isGameCompleted]);
 
   return {
     positions,
