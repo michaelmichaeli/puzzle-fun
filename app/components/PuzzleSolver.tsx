@@ -13,7 +13,7 @@ interface PuzzleSolverProps {
 }
 
 export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, solution }) => {
-  const { positions, onPieceMove, isSolved, shufflePieces, getProgress } = usePuzzleSolver({ pieces, solution });
+  const { positions, onPieceMove, isSolved, shufflePieces, getProgress, restart } = usePuzzleSolver({ pieces, solution });
 
   // Initialize and shuffle pieces
   useEffect(() => {
@@ -32,7 +32,11 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({ pieces, solution }) 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <PuzzleGameStatus isSolved={isSolved()} progress={getProgress()} />
+        <PuzzleGameStatus 
+          isSolved={isSolved()} 
+          progress={getProgress()} 
+          onRestart={restart}
+        />
       </div>
       <div 
         id="puzzle-board"

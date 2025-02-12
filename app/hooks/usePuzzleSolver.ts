@@ -219,11 +219,23 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     return totalPieces > 0 ? Math.round((correctPieces / totalPieces) * 100) : 0;
   }, [getCurrentMatrix, solution]);
 
+  const restart = useCallback(() => {
+    const container = document.getElementById('puzzle-board');
+    if (!container) return;
+    
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    
+    shufflePieces(width, height);
+    setIsGameCompleted(false);
+  }, [shufflePieces]);
+
   return {
     positions,
     onPieceMove,
     isSolved,
     shufflePieces,
-    getProgress
+    getProgress,
+    restart
   };
 };
