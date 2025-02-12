@@ -1,4 +1,4 @@
-# Puzzle Game
+# PuzzleFun!
 
 A modern, interactive puzzle game where you can create and solve custom puzzles from your own images.
 
