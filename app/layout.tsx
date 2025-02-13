@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Quicksand, Comic_Neue } from 'next/font/google';
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { FloatingSoundControls } from "./components/FloatingSoundControls";
 import { SoundProvider } from "./contexts/SoundContext";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
       >
         <SoundProvider>
           <Header />
+          <FloatingSoundControls />
           <main className="flex-grow container mx-auto px-4 py-4 pt-24">
             {children}
           </main>

@@ -74,11 +74,11 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 	};
 
 	return (
-		<div
-			className="space-y-4 relative"
-			role="application"
-			aria-label="Puzzle Game Board"
-		>
+    <div
+      className="space-y-4 relative w-full max-w-full overflow-hidden"
+      role="application"
+      aria-label="Puzzle Game Board"
+    >
 			<Confetti isActive={isSolved()} />
 
 			<div className="space-y-2">
@@ -89,13 +89,17 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 				/>
 			</div>
 
-			<div
-				id="puzzle-board"
-				className="relative w-full h-[calc(100vh-8rem)] bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl"
-				style={{ touchAction: "none" }}
-				role="region"
-				aria-label="Puzzle play area"
-			>
+<div
+id="puzzle-board"
+className="relative w-full h-[calc(100vh-8rem)] bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl mx-auto"
+style={{ 
+  touchAction: "none",
+  maxWidth: "100vw",
+  minWidth: "100%"
+}}
+role="region"
+aria-label="Puzzle play area"
+>
 				<PuzzleGrid
 					solution={solution}
 					pieces={pieces}

@@ -37,7 +37,7 @@ export default function Home() {
               <Star className="w-12 h-12 text-[#FFD800] animate-spin-slow" />
             </div>
             <div className="absolute -left-10 top-6">
-              <Sparkles className="w-8 h-8 text-[#FF69B4] animate-pulse" />
+              <Sparkles className="w-8 h-8 text-[#FF69B4] animate-scalePulse" />
             </div>
           </h1>
         </div>
