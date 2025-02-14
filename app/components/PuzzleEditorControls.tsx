@@ -23,7 +23,6 @@ export function PuzzleEditorControls({
 
   const getMainActionTooltip = () => {
     if (!title.trim()) return "Please enter a title first";
-    if (pieces.length > 0) return "Reset lines before modifying";
     if (lines.horizontal.length === 0 || lines.vertical.length === 0) return "Draw both horizontal and vertical lines";
     return "Create and play your puzzle";
   };
@@ -53,8 +52,6 @@ export function PuzzleEditorControls({
       >
         {!title.trim()
           ? "Enter a title first"
-          : pieces.length > 0
-          ? "Reset lines to modify"
           : lines.horizontal.length === 0 || lines.vertical.length === 0
           ? "Add both horizontal and vertical lines"
           : "Let's Play!"}
