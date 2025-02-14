@@ -4,6 +4,8 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { FloatingSoundControls } from "./components/FloatingSoundControls";
 import { SoundProvider } from "./contexts/SoundContext";
+import SkipLink from "./components/SkipLink";
+import * as TooltipProvider from '@radix-ui/react-tooltip';
 import "./globals.css";
 
 const quicksand = Quicksand({ 
@@ -39,14 +41,17 @@ export default function RootLayout({
           background: 'linear-gradient(180deg, #4DB2EC 0%, #4DB2EC 15%, #FFFFFF 100%)'
         }}
       >
-        <SoundProvider>
+        <TooltipProvider.Provider delayDuration={200} skipDelayDuration={100}>
+          <SoundProvider>
+            <SkipLink targetId="main-content" />
           <Header />
           <FloatingSoundControls />
-          <main className="flex-grow container mx-auto px-4 py-4 pt-24">
+          <main id="main-content" className="flex-grow container mx-auto px-4 py-4 pt-24">
             {children}
           </main>
           <Footer />
-        </SoundProvider>
+          </SoundProvider>
+        </TooltipProvider.Provider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import React from "react";
 import { Star, RotateCcw, Trophy } from 'lucide-react';
 import { useSoundContext } from "../contexts/SoundContext";
+import { ButtonWithTooltip } from "./ui/ButtonWithTooltip";
 
 interface PuzzleGameStatusProps {
   isSolved: boolean;
@@ -79,7 +80,7 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
         </div>
       </div>
 
-      <button
+      <ButtonWithTooltip
         onClick={() => {
           playClick();
           onRestart();
@@ -89,11 +90,11 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
           disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
           disabled:transform-none disabled:shadow-none
           flex items-center justify-center gap-3 font-comic font-bold text-lg"
-        aria-label="Restart puzzle game"
+        tooltipContent="Reset puzzle to starting position"
       >
         <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
         Start Over
-      </button>
+      </ButtonWithTooltip>
     </div>
   );
 };

@@ -74,11 +74,11 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 	};
 
 	return (
-    <div
-      className="space-y-4 relative w-full max-w-full overflow-hidden"
-      role="application"
-      aria-label="Puzzle Game Board"
-    >
+		<div
+			className="space-y-4 relative w-full max-w-full overflow-hidden"
+			role="application"
+			aria-label="Puzzle Game Board"
+		>
 			<Confetti isActive={isSolved()} />
 
 			<div className="space-y-2">
@@ -89,31 +89,32 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
 				/>
 			</div>
 
-<div
-id="puzzle-board"
-className="relative w-full h-[calc(100vh-8rem)] bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl mx-auto"
-style={{ 
-  touchAction: "none",
-  maxWidth: "100vw",
-  minWidth: "100%"
-}}
-role="region"
-aria-label="Puzzle play area"
->
-				<PuzzleGrid
-					solution={solution}
-					pieces={pieces}
-					currentPositions={positions}
-				/>
-				{pieces.map((piece) => (
-					<DraggablePiece
-						key={piece.id}
-						piece={piece}
-						onDrag={(id, x, y) => handlePieceMove(Number(id), x, y)}
-						position={positions[piece.id] || { x: 0, y: 0 }}
+				<div
+					id="puzzle-board"
+					className="relative w-full h-[calc(100vh-8rem)] bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl overflow-hidden shadow-xl mx-auto focus:outline-none focus:ring-2 focus:ring-[#4DB2EC]"
+					style={{
+						touchAction: "none",
+						maxWidth: "100vw",
+						minWidth: "100%",
+					}}
+					role="grid"
+					tabIndex={0}
+					aria-label="Puzzle play area"
+				>
+					<PuzzleGrid
+						solution={solution}
+						pieces={pieces}
+						currentPositions={positions}
 					/>
-				))}
-			</div>
+					{pieces.map((piece) => (
+						<DraggablePiece
+							key={piece.id}
+							piece={piece}
+							onDrag={(id, x, y) => handlePieceMove(Number(id), x, y)}
+							position={positions[piece.id] || { x: 0, y: 0 }}
+						/>
+					))}
+				</div>
 
 			<div className="sr-only" aria-live="polite">
 				{`Current progress: ${Math.floor(getProgress() * 100)}%`}
