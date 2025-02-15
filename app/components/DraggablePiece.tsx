@@ -9,13 +9,15 @@ interface DraggablePieceProps {
   onDrag: (id: number, x: number, y: number) => void;
   position: { x: number; y: number };
   isNearTarget?: boolean;
+  animate?: boolean;
 }
 
 export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   piece,
   onDrag,
   position,
-  isNearTarget = false
+  isNearTarget = false,
+  animate = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -59,8 +61,9 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
     >
       <div
         ref={dragRef}
-        className={`absolute touch-none select-none transition-shadow duration-200 
-          ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}`}
+        className={`absolute touch-none select-none
+          ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}
+          ${animate ? 'transition-transform duration-500 ease-in-out' : ''}`}
         style={{
           touchAction: 'none'
         }}

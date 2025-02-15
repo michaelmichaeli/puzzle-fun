@@ -2,6 +2,8 @@ import { useState, useCallback } from "react";
 import { PieceData, BoardMatrix } from "@/types/puzzle";
 
 const SNAPTHRESHOLD = 40;
+const SPREAD_DISTANCE = 500;
+const ANIMATION_DELAY = 500;
 
 interface UsePuzzleSolverProps {
   pieces: PieceData[];
@@ -11,8 +13,9 @@ interface UsePuzzleSolverProps {
 export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
   const [positions, setPositions] = useState<{ [id: number]: { x: number; y: number } }>({});
   const [isGameCompleted, setIsGameCompleted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  const shufflePieces = useCallback((containerWidth: number, containerHeight: number) => {
+  const getShuffledGridPositions = useCallback((containerWidth: number, containerHeight: number) => {
     const padding = 20;
     const spacing = 10;
     const avgPieceWidth = pieces[0]?.width || 0;
@@ -44,8 +47,58 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       newPositions[piece.id] = { x, y };
     });
 
-    setPositions(newPositions);
+    return newPositions;
   }, [pieces]);
+
+  const spreadPiecesFromCenter = useCallback((
+    containerWidth: number, 
+    containerHeight: number, 
+    currentPositions: { [id: number]: { x: number; y: number } }
+  ) => {
+    const padding = 40;
+    
+    const quadrants = [
+      { minAngle: -Math.PI/4, maxAngle: Math.PI/4 }, // right
+      { minAngle: Math.PI/4, maxAngle: 3*Math.PI/4 }, // up
+      { minAngle: 3*Math.PI/4, maxAngle: -3*Math.PI/4 }, // left
+      { minAngle: -3*Math.PI/4, maxAngle: -Math.PI/4 } // down
+    ];
+    
+    let quadrantIndex = 0;
+    const newPositions: { [id: number]: { x: number; y: number } } = {};
+    
+    pieces.forEach(piece => {
+      const currentPos = currentPositions[piece.id];
+      if (!currentPos) return;
+
+      const quadrant = quadrants[quadrantIndex];
+      quadrantIndex = (quadrantIndex + 1) % quadrants.length;
+
+      const angle = quadrant.minAngle + Math.random() * (quadrant.maxAngle - quadrant.minAngle);
+      
+      const x = Math.max(padding, Math.min(containerWidth - piece.width - padding,
+        currentPos.x + Math.cos(angle) * SPREAD_DISTANCE));
+      const y = Math.max(padding, Math.min(containerHeight - piece.height - padding,
+        currentPos.y + Math.sin(angle) * SPREAD_DISTANCE));
+      
+      newPositions[piece.id] = { x, y };
+    });
+
+    return newPositions;
+  }, [pieces]);
+
+  const shufflePieces = useCallback((containerWidth: number, containerHeight: number) => {
+    setIsAnimating(true);
+    const shuffledPositions = getShuffledGridPositions(containerWidth, containerHeight);
+    setPositions(shuffledPositions);
+    setTimeout(() => {
+      const spreadPositions = spreadPiecesFromCenter(containerWidth, containerHeight, shuffledPositions);
+      setPositions(spreadPositions);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, ANIMATION_DELAY);
+    }, ANIMATION_DELAY);
+  }, [getShuffledGridPositions, spreadPiecesFromCenter]);
 
   const findExpectedCell = useCallback((pieceId: number) => {
     let expectedRow = -1;
@@ -106,8 +159,9 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     return { x, y };
   }, [solution.grid, solution.cols, solution.rows, pieces]);
 
-
   const onPieceMove = useCallback((pieceId: number, x: number, y: number) => {
+    if (isAnimating) return;
+
     const expectedCell = findExpectedCell(pieceId);
     if (expectedCell.row === -1 || expectedCell.col === -1) return;
 
@@ -129,7 +183,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       ...prev,
       [pieceId]: finalPosition
     }));
-  }, [findExpectedCell, getGridCellCoordinates, solution.grid]);
+  }, [findExpectedCell, getGridCellCoordinates, solution.grid, isAnimating]);
 
   const getCurrentMatrix = useCallback((): BoardMatrix => {
     const matrix: number[][] = Array(solution.rows).fill(null)
@@ -221,6 +275,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     isSolved,
     shufflePieces,
     getProgress,
-    restart
+    restart,
+    isAnimating
   };
 };
