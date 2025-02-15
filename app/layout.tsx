@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 	title: "PuzzleFun! - Create and Play Puzzles",
 	description: "Create your own custom puzzles, play and have fun!",
 	icons: {
-		icon: "/favicon.png",
+		icon: "/favicon.svg",
 	},
 };
 
