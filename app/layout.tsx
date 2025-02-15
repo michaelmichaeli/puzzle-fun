@@ -36,10 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body 
-        className={`${quicksand.variable} ${comicNeue.variable} antialiased min-h-screen flex flex-col relative`}
-        style={{
-          background: 'linear-gradient(180deg, #4DB2EC 0%, #4DB2EC 15%, #FFFFFF 100%)'
-        }}
+        className={`${quicksand.variable} ${comicNeue.variable} antialiased min-h-screen flex flex-col relative bg-gradient-to-b from-blue-400 via-blue-400/95 to-white`}
       >
         <TooltipProvider.Provider delayDuration={200} skipDelayDuration={100}>
           <SoundProvider>

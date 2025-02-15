@@ -16,7 +16,7 @@ export function FloatingSoundControls() {
     <div className="lg:hidden fixed z-40 right-4 top-[5rem]">
       <ButtonWithTooltip
         onClick={handleVolumeToggle}
-        className="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg text-[#4DB2EC] hover:text-[#3DA2DC] transition-all transform hover:scale-105"
+        className="p-3 bg-white/90 hover:bg-white rounded-full shadow-lg text-blue-400 hover:text-blue-500 transition-all transform hover:scale-105"
         tooltipContent={isSoundEnabled ? "Mute sound" : "Unmute sound"}
       >
         {isSoundEnabled ? (

@@ -28,7 +28,7 @@ export default function Header() {
   return (
     <header
       className={`w-full px-4 py-4 sticky top-0 z-50 transition-colors duration-300 ${
-        scrolled ? "bg-[#4DB2EC]/80 backdrop-blur" : "bg-[#4DB2EC]"
+        scrolled ? "bg-blue-400/80 backdrop-blur" : "bg-blue-400"
       }`}
     >
       <div className="container mx-auto flex flex-wrap gap-y-4 md:flex-nowrap items-center justify-between relative z-10">
@@ -39,11 +39,7 @@ export default function Header() {
                 className="relative w-full h-full flex items-center justify-center"
               >
                 <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)",
-                  }}
+                  className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-pink-500"
                 />
                 <Puzzle className="w-8 h-8 text-white relative z-10 drop-shadow-md" />
               </div>
@@ -72,10 +68,7 @@ export default function Header() {
               <Link
                 href="/puzzle/create"
                 onClick={() => playClick()}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-full transition-all transform hover:scale-105 shadow-lg font-bold relative overflow-hidden"
-                style={{
-                  background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)",
-                }}
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-full transition-all transform hover:scale-105 shadow-lg font-bold relative overflow-hidden bg-gradient-to-br from-yellow-400 to-pink-500"
               >
                 <Puzzle className="w-5 h-5" />
                 <span className="font-bold">Create Puzzle</span>

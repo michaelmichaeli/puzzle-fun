@@ -41,10 +41,10 @@ export default function Confetti({ isActive }: ConfettiProps) {
       numberOfPieces={200}
       recycle={false}
       colors={[
-        '#2196f3', // primary
-        '#ffd700', // secondary
-        '#ff69b4', // accent-pink
-        '#32cd32', // accent-green
+        'rgb(59 130 246)', // blue-500 for primary
+        'rgb(250 204 21)', // yellow-400 for secondary
+        'rgb(236 72 153)', // pink-500 for accent-pink
+        'rgb(34 197 94)', // green-500 for accent-green
       ]}
       confettiSource={{
         x: dimensions.width / 2,
@@ -52,13 +52,7 @@ export default function Confetti({ isActive }: ConfettiProps) {
         w: 0,
         h: 0,
       }}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 1000,
-        pointerEvents: 'none',
-      }}
+      className="fixed top-0 left-0 z-[1000] pointer-events-none"
     />
   );
 }

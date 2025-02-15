@@ -24,7 +24,7 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
 
   return (
     <div 
-      className="space-y-6 select-none p-6 bg-white rounded-2xl shadow-lg border-2 border-[#4DB2EC]/10" 
+      className="space-y-6 select-none p-6 bg-white rounded-2xl shadow-lg border-2 border-blue-400/10" 
       role="status" 
       aria-live="polite"
     >
@@ -35,10 +35,10 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
               isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
           >
-            <p className="text-[#4DB2EC] font-bold text-2xl font-comic flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-[#FFD800] animate-bounce-slow" />
+            <p className="text-blue-400 font-bold text-2xl font-comic flex items-center gap-3">
+              <Trophy className="w-8 h-8 text-yellow-400 animate-bounce-slow" />
               Amazing Job!
-              <Star className="w-8 h-8 text-[#FFD800] animate-spin-slow" />
+              <Star className="w-8 h-8 text-yellow-400 animate-spin-slow" />
             </p>
           </div>
           <div 
@@ -46,14 +46,14 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
               !isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
             }`}
           >
-            <p className="text-[#4DB2EC] font-comic text-xl">{getMotivationalMessage()}</p>
+            <p className="text-blue-400 font-comic text-xl">{getMotivationalMessage()}</p>
           </div>
         </div>
       </div>
 
       <div className="flex gap-4 items-center">
         <div 
-          className="flex-1 h-14 bg-[#4DB2EC]/10 rounded-full overflow-hidden relative shadow-inner"
+          className="flex-1 h-14 bg-blue-400/10 rounded-full overflow-hidden relative shadow-inner"
           role="progressbar"
           aria-valuenow={Math.round(progress * 100)}
           aria-valuemin={0}
@@ -85,10 +85,8 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
             transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 
             disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
             disabled:transform-none disabled:shadow-none
-            flex items-center justify-center gap-3 font-comic font-bold text-lg relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
-          }}
+            flex items-center justify-center gap-3 font-comic font-bold text-lg relative overflow-hidden
+            bg-gradient-to-br from-yellow-400 to-pink-500"
           tooltipContent="Reset puzzle to starting position"
         >
           <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />

@@ -59,35 +59,28 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
     >
       <div
         ref={dragRef}
-        className="touch-none"
+        className={`absolute touch-none select-none transition-shadow duration-200 
+          ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}`}
         style={{
-          position: 'absolute',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          touchAction: 'none',
-          zIndex: isDragging ? 50 : 10,
-          cursor: isDragging ? 'grabbing' : 'grab',
-          transition: 'box-shadow 0.2s ease-in-out'
+          touchAction: 'none'
         }}
       >
         <div 
-          className="relative transition-shadow duration-200 rounded-sm"
-          style={{
-            boxShadow: isNearTarget 
-              ? '0 0 15px rgba(34,197,94,0.4)'
+          className={`relative transition-shadow duration-200 rounded-sm
+            ${isNearTarget 
+              ? 'shadow-[0_0_15px_rgba(34,197,94,0.4)]'
               : isDragging 
-                ? '0 0 20px rgba(0,0,0,0.4)' 
-                : 'none'
-          }}
+                ? 'shadow-[0_0_20px_rgba(0,0,0,0.4)]' 
+                : ''}`}
         >
           <canvas
             ref={canvasRef}
             width={piece.width}
             height={piece.height}
+            className="touch-none"
             style={{
               width: piece.width,
               height: piece.height,
-              touchAction: 'none',
               WebkitTouchCallout: 'none'
             }}
           />

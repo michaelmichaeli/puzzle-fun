@@ -16,10 +16,10 @@ export function TitleInput({
   isRegenerating,
 }: TitleInputProps) {
   return (
-    <div className="flex gap-4 items-center bg-white p-6 rounded-2xl shadow-md border-2 border-[#4DB2EC]/10">
+    <div className="flex gap-4 items-center bg-white p-6 rounded-2xl shadow-md border-2 border-blue-400/10">
       <label
         htmlFor="title"
-        className="text-[#4DB2EC] font-bold font-comic whitespace-nowrap"
+        className="text-blue-400 font-bold font-comic whitespace-nowrap"
       >
         Title:
       </label>
@@ -31,12 +31,12 @@ export function TitleInput({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
           placeholder="Enter puzzle title"
-          className="w-full px-6 py-3 rounded-full bg-white text-[#4DB2EC] border-2 border-[#4DB2EC] focus:border-[#FFD800] outline-none font-comic shadow-sm"
+          className="w-full px-6 py-3 rounded-full bg-white text-blue-400 border-2 border-blue-400 focus:border-yellow-400 outline-none font-comic shadow-sm"
         />
         <button
           onClick={onRegenerate}
           disabled={isRegenerating}
-          className="p-3 bg-[#FFD800] text-[#4DB2EC] rounded-full hover:bg-[#FFE800] 
+          className="p-3 bg-yellow-400 text-blue-400 rounded-full hover:bg-yellow-300 
             disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
             transition-all transform hover:scale-105 shadow-md"
           aria-label="Regenerate title and description"

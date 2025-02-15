@@ -2,14 +2,7 @@
 
 import { LoadingSpinner } from "./LoadingSpinner";
 import { Sparkles, RefreshCw } from "lucide-react";
-import { AiGeneratedContent } from "@/types/puzzle";
-
-interface AIStatusBoxProps {
-  isLoading: boolean;
-  error: string | null;
-  aiContent?: AiGeneratedContent;
-  onRegenerate: () => void;
-}
+import { AIStatusBoxProps } from "@/types/ui";
 
 export function AIStatusBox({
   isLoading,
@@ -19,11 +12,11 @@ export function AIStatusBox({
 }: AIStatusBoxProps) {
   return (
     <div className="space-y-6">
-      <div className="bg-[#FFF8E1] p-6 rounded-2xl border-2 border-[#FFD800] shadow-lg">
+      <div className="bg-yellow-50 p-6 rounded-2xl border-2 border-yellow-400 shadow-lg">
         <div className="flex items-start gap-3">
-          <Sparkles className="w-6 h-6 text-[#FFD800] mt-1 animate-scalePulse" />
+          <Sparkles className="w-6 h-6 text-yellow-400 mt-1 animate-scalePulse" />
           <div className="space-y-2">
-            <p className="font-comic text-[#4DB2EC]">
+            <p className="font-comic text-blue-400">
               <span className="font-bold">AI Magic in Action! ✨</span>
               <br />
               We&apos;re using AI to analyze your image and create a perfect title
@@ -33,12 +26,12 @@ export function AIStatusBox({
         </div>
       </div>
 
-      <div className="min-h-[200px] space-y-4 bg-white p-6 rounded-2xl shadow-md border-2 border-[#4DB2EC]/10 relative">
+      <div className="min-h-[200px] space-y-4 bg-white p-6 rounded-2xl shadow-md border-2 border-blue-400/10 relative">
         <div className="absolute top-4 right-4">
           <button
             onClick={onRegenerate}
             disabled={isLoading}
-            className="p-2 bg-[#FFD800] text-[#4DB2EC] rounded-full hover:bg-[#FFE800] 
+            className="p-2 bg-yellow-400 text-blue-400 rounded-full hover:bg-yellow-300
               disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
               transition-all transform hover:scale-105 shadow-md"
             aria-label="Regenerate title and description"
@@ -53,23 +46,23 @@ export function AIStatusBox({
               {error}
             </div>
           ) : isLoading ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-[#4DB2EC] font-comic">
+            <div className="flex items-center justify-center gap-2 py-4 text-blue-400 font-comic">
               <LoadingSpinner size="sm" />
               <span>AI is thinking...</span>
             </div>
           ) : aiContent ? (
             <div className="space-y-4">
               <p className="font-comic">
-                <span className="text-[#4DB2EC] font-bold">Description: </span>
+              <span className="text-blue-400 font-bold">Description: </span>
                 {aiContent.description}
               </p>
               <p className="font-comic">
-                <span className="text-[#4DB2EC] font-bold">Context: </span>
+              <span className="text-blue-400 font-bold">Context: </span>
                 {aiContent.context}
               </p>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[150px] text-[#4DB2EC]/70 font-comic italic">
+            <div className="flex items-center justify-center h-[150px] text-blue-400/70 font-comic italic">
               Waiting for AI analysis...
             </div>
           )}

@@ -18,13 +18,13 @@ export const LoadingSpinner: FC<LoadingSpinnerProps> = ({ size = 'md' }) => {
           ${sizeClasses[size]} 
           animate-spin 
           rounded-full 
-          border-[#4DB2EC]/20
-          border-t-[#4DB2EC]
-          border-r-[#FFD800]
+          border-blue-400/20
+          border-t-blue-400
+          border-r-yellow-400
           shadow-lg
         `}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-[#4DB2EC] to-[#FFD800] opacity-20 rounded-full"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-400 to-yellow-400 opacity-20 rounded-full"></div>
       </div>
     </div>
   )
