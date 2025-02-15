@@ -48,13 +48,13 @@ export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
           </div>
 
           <div className="mt-3 flex items-center gap-2 text-sm text-[#4DB2EC] font-comic">
-            <Clock className="w-4 h-4" />
+            <Clock className="w-5 h-5" />
             <time dateTime={puzzle.createdAt}>{formattedDate}</time>
           </div>
 
           {puzzle.aiContent && (
             <div className="mt-3 flex items-start gap-2 text-sm">
-              <Info className="w-5 h-5 mt-0.5 text-[#4DB2EC]" />
+              <Info className="w-12 mt-0.5 text-[#4DB2EC]" width={24}/>
               <p className="text-[#4DB2EC] line-clamp-2 font-comic">
                 {puzzle.aiContent.description}
               </p>
