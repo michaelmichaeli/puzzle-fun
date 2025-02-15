@@ -3,6 +3,7 @@
 import { LoadingSpinner } from "./LoadingSpinner";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { AIStatusBoxProps } from "@/types/ui";
+import { ButtonWithTooltip } from "./ButtonWithTooltip";
 
 export function AIStatusBox({
   isLoading,
@@ -28,16 +29,19 @@ export function AIStatusBox({
 
       <div className="min-h-[200px] space-y-4 bg-white p-6 rounded-2xl shadow-md border-2 border-blue-400/10 relative">
         <div className="absolute top-4 right-4">
-          <button
+          <ButtonWithTooltip
             onClick={onRegenerate}
             disabled={isLoading}
-            className="p-2 bg-yellow-400 text-blue-400 rounded-full hover:bg-yellow-300
+            className="p-3 rounded-full
               disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
-              transition-all transform hover:scale-105 shadow-md"
-            aria-label="Regenerate title and description"
+              transition-all transform hover:scale-105 shadow-md relative overflow-hidden"
+            style={!isLoading ? {
+              background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
+            } : undefined}
+            tooltipContent="Generate new AI analysis"
           >
-            <RefreshCw className="w-5 h-5" />
-          </button>
+            <RefreshCw className="w-5 h-5 text-white" />
+          </ButtonWithTooltip>
         </div>
 
         <div className="pt-2">

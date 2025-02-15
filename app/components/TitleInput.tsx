@@ -1,6 +1,7 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
+import { ButtonWithTooltip } from "./ButtonWithTooltip";
 
 interface TitleInputProps {
   title: string;
@@ -33,16 +34,19 @@ export function TitleInput({
           placeholder="Enter puzzle title"
           className="w-full px-6 py-3 rounded-full bg-white text-blue-400 border-2 border-blue-400 focus:border-yellow-400 outline-none font-comic shadow-sm"
         />
-        <button
+        <ButtonWithTooltip
           onClick={onRegenerate}
           disabled={isRegenerating}
-          className="p-3 bg-yellow-400 text-blue-400 rounded-full hover:bg-yellow-300 
+          className="p-3 rounded-full
             disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
-            transition-all transform hover:scale-105 shadow-md"
-          aria-label="Regenerate title and description"
+            transition-all transform hover:scale-105 shadow-md relative overflow-hidden"
+          style={!isRegenerating ? {
+            background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
+          } : undefined}
+          tooltipContent="Generate new title"
         >
-          <RefreshCw className={`w-5 h-5 ${isRegenerating ? 'animate-spin' : ''}`} />
-        </button>
+          <RefreshCw className={`w-5 h-5 text-white ${isRegenerating ? 'animate-spin' : ''}`} />
+        </ButtonWithTooltip>
       </div>
     </div>
   );
