@@ -28,7 +28,7 @@ export default function Header() {
   return (
     <header
       className={`w-full px-4 py-4 sticky top-0 z-50 transition-colors duration-300 ${
-        scrolled ? "bg-blue-400/80 backdrop-blur" : "bg-blue-400"
+        scrolled ? "bg-blue-400/50 backdrop-blur-sm" : "bg-blue-400"
       }`}
     >
       <div className="container mx-auto flex flex-wrap gap-y-4 md:flex-nowrap items-center justify-between relative z-10">

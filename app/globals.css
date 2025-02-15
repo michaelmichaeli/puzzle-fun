@@ -81,6 +81,15 @@ body {
   }
 }
 
+@keyframes moveCloud {
+  from {
+    transform: translateX(-100px);
+  }
+  to {
+    transform: translateX(calc(100vw + 100px));
+  }
+}
+
 @keyframes shake {
   0%,
   100% {

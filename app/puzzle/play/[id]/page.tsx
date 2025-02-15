@@ -75,12 +75,12 @@ export default function PlayPage({ params }: PlayPageProps) {
                       <Info className="w-4 h-4 text-secondary" />
                     </div>
                     <div className="space-y-2 font-comic">
-                      <h2>Description:</h2>
-                      <p className="text-primary">
+                      <h2 className="text-primary">Description:</h2>
+                      <p className="text-sm text-gray-600">
                         {puzzle.aiContent.description}
                       </p>
-                      <h2>Context:</h2>
-                      <p className="text-primary text-sm">
+                      <h2 className="text-primary">Context:</h2>
+                      <p className="text-sm text-gray-600">
                         {puzzle.aiContent.context}
                       </p>
                     </div>

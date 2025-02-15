@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import { FloatingSoundControls } from "./components/FloatingSoundControls";
 import { SoundProvider } from "./contexts/SoundContext";
 import SkipLink from "./components/SkipLink";
+import { CloudsBackground } from "./components/CloudsBackground";
 import * as TooltipProvider from "@radix-ui/react-tooltip";
 import "./globals.css";
 
@@ -39,13 +40,14 @@ export default function RootLayout({
 				className={`${quicksand.variable} ${comicNeue.variable} antialiased min-h-screen flex flex-col relative bg-gradient-to-b from-blue-400 via-blue-400/95 to-white`}
 			>
 				<TooltipProvider.Provider delayDuration={200} skipDelayDuration={100}>
+					<CloudsBackground />
 					<SoundProvider>
 						<SkipLink targetId="main-content" />
 						<Header />
 						<FloatingSoundControls />
 						<main
 							id="main-content"
-							className="flex-grow container mx-auto px-4 py-4"
+							className="flex-grow py-4 md:px-4 md:container md:mx-auto"
 						>
 							{children}
 						</main>

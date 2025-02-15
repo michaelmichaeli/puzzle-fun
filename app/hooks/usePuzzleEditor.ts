@@ -72,8 +72,8 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
         const existingHorizontal = Math.abs(nearestHorizontal - y) < threshold;
 
         if (isTooCloseToEdge || existingVertical || existingHorizontal) {
-          ctx.strokeStyle = "rgb(239 68 68)"; // Using red-500 from Tailwind
-          ctx.fillStyle = "rgba(239, 68, 68, 0.1)"; // Using red-500 with opacity
+          ctx.strokeStyle = "rgb(239 68 68)";
+          ctx.fillStyle = "rgba(239, 68, 68, 0.1)";
           ctx.setLineDash([5, 5]);
 
           if (existingVertical) {
@@ -124,7 +124,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
 
           ctx.setLineDash([]);
         } else {
-          ctx.strokeStyle = "rgb(34 197 94)"; // Using green-500 from Tailwind
+          ctx.strokeStyle = "rgb(34 197 94)";
           ctx.setLineDash([5, 5]);
 
           ctx.beginPath();

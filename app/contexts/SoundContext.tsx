@@ -101,7 +101,6 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     playSuccess: () =>
       soundManager.current.createOscillator(800, 0.08, "triangle"),
     playComplete: () => {
-      // Festive celebration sequence
       const notes = [
         { freq: 523.25, duration: 0.1 }, // C5
         { freq: 659.25, duration: 0.1 }, // E5
