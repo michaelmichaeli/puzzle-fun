@@ -56,7 +56,7 @@ export default function PlayPage({ params }: PlayPageProps) {
           <div className="space-y-6 pt-4">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-comic font-bold text-white">
+                <h1 className="text-5xl font-comic font-bold text-white">
                   {puzzle.title}
                 </h1>
                 <Star className="w-8 h-8 text-[#FFD800] animate-spin-slow" />

@@ -40,8 +40,10 @@ export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
             <h3 className="font-comic font-bold text-[#4DB2EC] text-lg leading-tight line-clamp-2">
               {puzzle.title}
             </h3>
-            <div className="bg-[#FFD800]/10 p-2 rounded-full">
-              <PuzzleIcon className="w-5 h-5 text-[#FFD800]" />
+            <div className="p-2 rounded-full flex items-center gap-1 relative overflow-hidden">
+              <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)" }} />
+              <PuzzleIcon className="w-5 h-5 relative z-10 text-white" />
+              <span className="font-comic text-sm relative z-10 text-white">{puzzle.pieces.length}</span>
             </div>
           </div>
 
@@ -52,7 +54,7 @@ export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
 
           {puzzle.aiContent && (
             <div className="mt-3 flex items-start gap-2 text-sm">
-              <Info className="w-4 h-4 mt-0.5 text-[#4DB2EC]" />
+              <Info className="w-5 h-5 mt-0.5 text-[#4DB2EC]" />
               <p className="text-[#4DB2EC] line-clamp-2 font-comic">
                 {puzzle.aiContent.description}
               </p>
@@ -61,8 +63,9 @@ export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
         </div>
 
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
-            <p className="text-sm font-comic font-bold text-[#4DB2EC]">
+          <div className="px-3 py-1 rounded-full shadow-lg relative overflow-hidden">
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)" }} />
+            <p className="text-sm font-comic font-bold text-white relative z-10">
               Play Now!
             </p>
           </div>

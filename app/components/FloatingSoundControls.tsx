@@ -2,7 +2,7 @@
 
 import { Volume2, VolumeX } from "lucide-react";
 import { useSoundContext } from "../contexts/SoundContext";
-import { ButtonWithTooltip } from "./ui/ButtonWithTooltip";
+import { ButtonWithTooltip } from "./ButtonWithTooltip";
 
 export function FloatingSoundControls() {
   const { isSoundEnabled, toggleSound, playClick } = useSoundContext();

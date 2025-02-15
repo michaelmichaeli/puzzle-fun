@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Volume2, VolumeX, Home, Puzzle } from "lucide-react";
 import { useSoundContext } from "../contexts/SoundContext";
-import { ButtonWithTooltip } from "./ui/ButtonWithTooltip";
-import { Tooltip } from "./ui/Tooltip";
+import { ButtonWithTooltip } from "./ButtonWithTooltip";
+import { Tooltip } from "./Tooltip";
 
 export default function Header() {
   const pathname = usePathname();
@@ -42,7 +42,7 @@ export default function Header() {
                   className="absolute inset-0"
                   style={{
                     background:
-                      "linear-gradient(135deg, #4DB2EC 0%, #FFD800 50%, #FF69B4 100%)",
+                      "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)",
                   }}
                 />
                 <Puzzle className="w-8 h-8 text-white relative z-10 drop-shadow-md" />
@@ -72,7 +72,10 @@ export default function Header() {
               <Link
                 href="/puzzle/create"
                 onClick={() => playClick()}
-                className="flex items-center gap-2 px-6 py-3 bg-[#FFD800] text-[#4DB2EC] rounded-full hover:bg-[#FFE800] transition-all transform hover:scale-105 shadow-lg font-bold"
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-full transition-all transform hover:scale-105 shadow-lg font-bold relative overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)",
+                }}
               >
                 <Puzzle className="w-5 h-5" />
                 <span className="font-bold">Create Puzzle</span>

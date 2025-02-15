@@ -46,7 +46,7 @@ export default function RootLayout({
             <SkipLink targetId="main-content" />
           <Header />
           <FloatingSoundControls />
-          <main id="main-content" className="flex-grow container mx-auto px-4 py-4 pt-24">
+          <main id="main-content" className="flex-grow container mx-auto px-4 py-4">
             {children}
           </main>
           <Footer />
