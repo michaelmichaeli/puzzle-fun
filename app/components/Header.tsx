@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Volume2, VolumeX, Home, Puzzle } from "lucide-react";
+import { Volume2, VolumeX, Home, Puzzle, Plus } from "lucide-react";
 import { useSoundContext } from "../contexts/SoundContext";
 import { ButtonWithTooltip } from "./ButtonWithTooltip";
 import { Tooltip } from "./Tooltip";
@@ -41,7 +41,7 @@ export default function Header() {
                 <div
                   className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-pink-500"
                 />
-                <Puzzle className="w-8 h-8 text-white relative z-10 drop-shadow-md" />
+                <Puzzle className="w-8 h-8 text-white relative z-10 drop-shadow-md fill-current stroke-0" />
               </div>
             </div>
             <span className="text-white text-2xl font-bold font-comic">
@@ -70,7 +70,7 @@ export default function Header() {
                 onClick={() => playClick()}
                 className="flex items-center gap-2 px-6 py-3 text-white rounded-full transition-all transform hover:scale-105 shadow-lg font-bold relative overflow-hidden bg-gradient-to-br from-yellow-400 to-pink-500"
               >
-                <Puzzle className="w-5 h-5" />
+                <Plus className="w-5 h-5" />
                 <span className="font-bold">Create Puzzle</span>
               </Link>
             </Tooltip>

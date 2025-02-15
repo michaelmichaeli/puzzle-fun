@@ -48,11 +48,21 @@ export default function Confetti({ isActive }: ConfettiProps) {
       ]}
       confettiSource={{
         x: dimensions.width / 2,
-        y: dimensions.height / 2,
-        w: 0,
-        h: 0,
+        y: dimensions.height * 0.4,
+        w: 10,
+        h: 20,
       }}
-      className="fixed top-0 left-0 z-[1000] pointer-events-none"
+      initialVelocityX={4}
+      initialVelocityY={8}
+      gravity={0.3}
+      tweenDuration={4000}
+      style={{
+        position: 'fixed',
+        inset: '0',
+        margin: 'auto',
+        zIndex: 1000,
+        pointerEvents: 'none'
+      }}
     />
   );
 }

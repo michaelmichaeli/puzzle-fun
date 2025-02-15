@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { usePuzzleEditor } from "../hooks/usePuzzleEditor";
+import { addPuzzle } from "../utils/puzzleStorage";
 import { useRouter } from "next/navigation";
 import { AIStatusBox } from "./AIStatusBox";
 import { PuzzleEditorCanvas } from "./PuzzleEditorCanvas";
@@ -119,54 +120,53 @@ const generateAiContent = useCallback(async () => {
 		generateAiContent();
 	};
 
-	const savePuzzle = useCallback(async () => {
-		if (!pieces.length) return;
+const savePuzzle = useCallback(async () => {
+  if (!pieces.length) return;
 
-		const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-		const maxRow = Math.max(...pieces.map((p) => p.gridPosition.row)) + 1;
-		const maxCol = Math.max(...pieces.map((p) => p.gridPosition.col)) + 1;
+  const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const maxRow = Math.max(...pieces.map((p) => p.gridPosition.row)) + 1;
+  const maxCol = Math.max(...pieces.map((p) => p.gridPosition.col)) + 1;
 
-		const grid = Array(maxRow)
-			.fill(null)
-			.map(() => Array(maxCol).fill(null));
-		pieces.forEach((piece) => {
-			grid[piece.gridPosition.row][piece.gridPosition.col] = piece.id;
-		});
+  const grid = Array(maxRow)
+    .fill(null)
+    .map(() => Array(maxCol).fill(null));
+  pieces.forEach((piece) => {
+    grid[piece.gridPosition.row][piece.gridPosition.col] = piece.id;
+  });
 
-		const puzzle: Puzzle = {
-			id: uniqueId,
-			title: title.trim(),
-			imageUrl,
-			createdAt: new Date().toISOString(),
-			...(aiContent && { aiContent }),
-			pieces: pieces.map((piece) => ({
-				id: piece.id,
-				imageSrc: piece.image.toDataURL(),
-				x: piece.x,
-				y: piece.y,
-				width: piece.width,
-				height: piece.height,
-				widthRatio: piece.width / canvasRef.current!.width,
-				heightRatio: piece.height / canvasRef.current!.height,
-				connections: piece.connections,
-				shapePath: [],
-			})),
-			originalWidth: canvasRef.current!.width,
-			originalHeight: canvasRef.current!.height,
-			connectedGroups: [],
-			solution: {
-				rows: maxRow,
-				cols: maxCol,
-				grid,
-			},
-		};
-		const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
-		savedPuzzles.push(puzzle);
-		localStorage.setItem("puzzles", JSON.stringify(savedPuzzles));
-		await new Promise((resolve) => setTimeout(resolve, 100));
-		await router.push(`/puzzle/play/${uniqueId}`);
-		return uniqueId;
-	}, [pieces, title, imageUrl, aiContent, canvasRef, router]);
+  const puzzle: Puzzle = {
+    id: uniqueId,
+    title: title.trim(),
+    imageUrl,
+    createdAt: new Date().toISOString(),
+    ...(aiContent && { aiContent }),
+    pieces: pieces.map((piece) => ({
+      id: piece.id,
+      imageSrc: piece.image.toDataURL(),
+      x: piece.x,
+      y: piece.y,
+      width: piece.width,
+      height: piece.height,
+      widthRatio: piece.width / canvasRef.current!.width,
+      heightRatio: piece.height / canvasRef.current!.height,
+      connections: piece.connections,
+      shapePath: [],
+    })),
+    originalWidth: canvasRef.current!.width,
+    originalHeight: canvasRef.current!.height,
+    connectedGroups: [],
+    solution: {
+      rows: maxRow,
+      cols: maxCol,
+      grid,
+    },
+  };
+  
+  addPuzzle(puzzle);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  await router.push(`/puzzle/play/${uniqueId}`);
+  return uniqueId;
+}, [pieces, title, imageUrl, aiContent, canvasRef, router]);
 
 	useEffect(() => {
 		if (!isSavingPuzzle) return;

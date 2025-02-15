@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Puzzle } from "@/types/puzzle";
+import { loadPuzzles, removePuzzle } from "./utils/puzzleStorage";
 import PuzzleCard from "./components/PuzzleCard";
 import { Sparkles, Puzzle as PuzzleIcon, Star } from "lucide-react";
 import { useSoundContext } from "./contexts/SoundContext";
@@ -11,27 +12,20 @@ export default function Home() {
 	const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
 	const { playClick } = useSoundContext();
 
-	const handleDeletePuzzle = (id: string) => {
-		const updatedPuzzles = puzzles.filter((puzzle) => puzzle.id !== id);
-		setPuzzles(updatedPuzzles);
-		localStorage.setItem("puzzles", JSON.stringify(updatedPuzzles));
-	};
+const handleDeletePuzzle = (id: string) => {
+  removePuzzle(id);
+  setPuzzles(loadPuzzles());
+};
 
-	useEffect(() => {
-		const loadPuzzles = () => {
-			try {
-				const storedPuzzles = localStorage.getItem("puzzles");
-				if (storedPuzzles) {
-					setPuzzles(JSON.parse(storedPuzzles));
-				}
-			} catch (error) {
-				console.error("Failed to load puzzles:", error);
-			}
-		};
-		loadPuzzles();
-		window.addEventListener("storage", loadPuzzles);
-		return () => window.removeEventListener("storage", loadPuzzles);
-	}, []);
+useEffect(() => {
+  const loadStoredPuzzles = () => {
+    setPuzzles(loadPuzzles());
+  };
+  
+  loadStoredPuzzles();
+  window.addEventListener("storage", loadStoredPuzzles);
+  return () => window.removeEventListener("storage", loadStoredPuzzles);
+}, []);
 
 	return (
 		<div className="p-8 pb-20 gap-8">
