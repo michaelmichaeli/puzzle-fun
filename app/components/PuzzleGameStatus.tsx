@@ -14,15 +14,6 @@ interface PuzzleGameStatusProps {
 export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, progress, onRestart }) => {
   const { playClick } = useSoundContext();
 
-  const getProgressGradient = () => {
-    if (progress <= 0.33) {
-      return 'from-[#FF69B4] via-[#4DB2EC] to-[#FF69B4]';
-    } else if (progress <= 0.66) {
-      return 'from-[#4DB2EC] via-[#87CEEB] to-[#4DB2EC]';
-    }
-    return 'from-[#87CEEB] via-[#4CAF50] to-[#87CEEB]';
-  };
-
   const getMotivationalMessage = () => {
     if (progress < 0.25) return "Let's solve this puzzle together! 🚀";
     if (progress < 0.5) return "You're doing great! Keep going! ⭐";
@@ -60,44 +51,50 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="flex gap-4 items-center">
         <div 
-          className="w-full h-8 bg-[#4DB2EC]/10 rounded-full overflow-hidden relative shadow-inner"
+          className="flex-1 h-14 bg-[#4DB2EC]/10 rounded-full overflow-hidden relative shadow-inner"
           role="progressbar"
           aria-valuenow={Math.round(progress * 100)}
           aria-valuemin={0}
           aria-valuemax={100}
         >
           <div
-            className={`h-full bg-gradient-to-r ${getProgressGradient()} transition-all duration-500 ease-out relative`}
+            className={`h-full transition-all duration-500 ease-out relative ${
+              progress <= 0.33 
+                ? 'bg-pink-500' 
+                : progress <= 0.66 
+                ? 'bg-yellow-500' 
+                : 'bg-green-500'
+            }`}
             style={{ width: `${progress * 100}%` }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
           </div>
-          <span className="absolute inset-0 flex items-center justify-center text-[#4DB2EC] font-comic font-bold text-lg">
+          <span className="absolute inset-0 flex items-center justify-center text-white font-comic font-bold text-xl">
             {Math.round(progress * 100)}%
           </span>
         </div>
+      
+        <ButtonWithTooltip
+          onClick={() => {
+            playClick();
+            onRestart();
+          }}
+          className="group py-4 px-8 text-white rounded-full w-48
+            transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 
+            disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
+            disabled:transform-none disabled:shadow-none
+            flex items-center justify-center gap-3 font-comic font-bold text-lg relative overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
+          }}
+          tooltipContent="Reset puzzle to starting position"
+        >
+          <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+          Start Over
+        </ButtonWithTooltip>
       </div>
-
-      <ButtonWithTooltip
-        onClick={() => {
-          playClick();
-          onRestart();
-        }}
-        className="group py-4 px-8 text-white rounded-full 
-          transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 
-          disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
-          disabled:transform-none disabled:shadow-none
-          flex items-center justify-center gap-3 font-comic font-bold text-lg relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
-        }}
-        tooltipContent="Reset puzzle to starting position"
-      >
-        <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
-        Start Over
-      </ButtonWithTooltip>
     </div>
   );
 };
