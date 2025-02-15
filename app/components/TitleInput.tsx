@@ -37,15 +37,15 @@ export function TitleInput({
         <ButtonWithTooltip
           onClick={onRegenerate}
           disabled={isRegenerating}
-          className="p-3 rounded-full
+          className={`p-3 rounded-full
             disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
-            transition-all transform hover:scale-105 shadow-md relative overflow-hidden"
-          style={!isRegenerating ? {
-            background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
-          } : undefined}
+            transition-all transform hover:scale-105 shadow-md relative overflow-hidden
+            ${!isRegenerating ? "bg-gradient-to-br from-secondary to-accent-pink" : ""}`}
           tooltipContent="Generate new title"
         >
-          <RefreshCw className={`w-5 h-5 text-white ${isRegenerating ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-5 h-5 text-white ${isRegenerating ? "animate-spin" : ""}`}
+          />
         </ButtonWithTooltip>
       </div>
     </div>

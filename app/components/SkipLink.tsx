@@ -1,13 +1,13 @@
-import { FC } from 'react';
+import { FC } from "react";
 
 interface SkipLinkProps {
   targetId: string;
   label?: string;
 }
 
-export const SkipLink: FC<SkipLinkProps> = ({ 
-  targetId, 
-  label = 'Skip to main content'
+export const SkipLink: FC<SkipLinkProps> = ({
+  targetId,
+  label = "Skip to main content",
 }) => {
   return (
     <a

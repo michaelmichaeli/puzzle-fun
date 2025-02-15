@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import ReactConfetti from 'react-confetti';
-import { useSoundContext } from '../contexts/SoundContext';
+import { useEffect, useState } from "react";
+import ReactConfetti from "react-confetti";
+import { useSoundContext } from "../contexts/SoundContext";
 
 interface ConfettiProps {
   isActive: boolean;
@@ -28,8 +28,8 @@ export default function Confetti({ isActive }: ConfettiProps) {
       playComplete();
     }
 
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, [isActive, playComplete]);
 
   if (!isActive) return null;
@@ -41,10 +41,10 @@ export default function Confetti({ isActive }: ConfettiProps) {
       numberOfPieces={200}
       recycle={false}
       colors={[
-        'rgb(59 130 246)', // blue-500 for primary
-        'rgb(250 204 21)', // yellow-400 for secondary
-        'rgb(236 72 153)', // pink-500 for accent-pink
-        'rgb(34 197 94)', // green-500 for accent-green
+        "rgb(59 130 246)", // blue-500 for primary
+        "rgb(250 204 21)", // yellow-400 for secondary
+        "rgb(236 72 153)", // pink-500 for accent-pink
+        "rgb(34 197 94)", // green-500 for accent-green
       ]}
       confettiSource={{
         x: dimensions.width / 2,
@@ -57,11 +57,11 @@ export default function Confetti({ isActive }: ConfettiProps) {
       gravity={0.3}
       tweenDuration={4000}
       style={{
-        position: 'fixed',
-        inset: '0',
-        margin: 'auto',
+        position: "fixed",
+        inset: "0",
+        margin: "auto",
         zIndex: 1000,
-        pointerEvents: 'none'
+        pointerEvents: "none",
       }}
     />
   );

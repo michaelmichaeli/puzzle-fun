@@ -45,25 +45,27 @@ export function PuzzleEditorCanvas({
           </>
         ) : (
           <>
-            Preview of puzzle pieces •{" "}
-            <span>Click Reset Lines to modify</span>
+            Preview of puzzle pieces • <span>Click Reset Lines to modify</span>
           </>
         )}
       </div>
-      <div id="puzzle-board" className="h-[70vh] p-6 bg-white rounded-2xl flex items-center justify-center relative group shadow-xl border-2 border-[#4DB2EC]">
-      <div className="relative" id="canvas-wrapper">
-        <canvas
-          ref={canvasRef}
-          onMouseMove={(e) => handleMouseMove(e.nativeEvent)}
-          onClick={handleCanvasClick}
-          style={{
-            cursor: "crosshair",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain",
-          }}
-        />
-      </div>
+      <div
+        id="puzzle-board"
+        className="h-[70vh] p-6 bg-white rounded-2xl flex items-center justify-center relative group shadow-xl border-2 border-primary"
+      >
+        <div className="relative" id="canvas-wrapper">
+          <canvas
+            ref={canvasRef}
+            onMouseMove={(e) => handleMouseMove(e.nativeEvent)}
+            onClick={handleCanvasClick}
+            style={{
+              cursor: "crosshair",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,24 +1,22 @@
-import { FC, ReactNode } from 'react';
-import * as RadixTooltip from '@radix-ui/react-tooltip';
+import { FC, ReactNode } from "react";
+import * as RadixTooltip from "@radix-ui/react-tooltip";
 
 interface TooltipProps {
   children: ReactNode;
   content: ReactNode;
-  side?: 'top' | 'right' | 'bottom' | 'left';
-  align?: 'start' | 'center' | 'end';
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
 }
 
 export const Tooltip: FC<TooltipProps> = ({
   children,
   content,
-  side = 'top',
-  align = 'center'
+  side = "top",
+  align = "center",
 }) => {
   return (
     <RadixTooltip.Root>
-      <RadixTooltip.Trigger asChild>
-        {children}
-      </RadixTooltip.Trigger>
+      <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
       <RadixTooltip.Portal>
         <RadixTooltip.Content
           side={side}

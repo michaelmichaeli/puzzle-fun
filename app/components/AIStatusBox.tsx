@@ -20,8 +20,8 @@ export function AIStatusBox({
             <p className="font-comic text-blue-400">
               <span className="font-bold">AI Magic in Action! ✨</span>
               <br />
-              We&apos;re using AI to analyze your image and create a perfect title
-              and description.
+              We&apos;re using AI to analyze your image and create a perfect
+              title and description.
             </p>
           </div>
         </div>
@@ -32,12 +32,10 @@ export function AIStatusBox({
           <ButtonWithTooltip
             onClick={onRegenerate}
             disabled={isLoading}
-            className="p-3 rounded-full
+            className={`p-3 rounded-full
               disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed 
-              transition-all transform hover:scale-105 shadow-md relative overflow-hidden"
-            style={!isLoading ? {
-              background: "linear-gradient(135deg, #FFD800 0%, #FF69B4 100%)"
-            } : undefined}
+              transition-all transform hover:scale-105 shadow-md relative overflow-hidden
+              ${!isLoading ? "bg-gradient-to-br from-secondary to-accent-pink" : ""}`}
             tooltipContent="Generate new AI analysis"
           >
             <RefreshCw className="w-5 h-5 text-white" />
@@ -57,11 +55,11 @@ export function AIStatusBox({
           ) : aiContent ? (
             <div className="space-y-4">
               <p className="font-comic">
-              <span className="text-blue-400 font-bold">Description: </span>
+                <span className="text-blue-400 font-bold">Description: </span>
                 {aiContent.description}
               </p>
               <p className="font-comic">
-              <span className="text-blue-400 font-bold">Context: </span>
+                <span className="text-blue-400 font-bold">Context: </span>
                 {aiContent.context}
               </p>
             </div>

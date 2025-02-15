@@ -29,7 +29,7 @@ export default function UploadImage({ handleImageChange }: UploadImageProps) {
 
     const fakeEvent = {
       target: {
-        files: dataTransfer.files
+        files: dataTransfer.files,
       },
       preventDefault: () => {},
       stopPropagation: () => {},
@@ -56,7 +56,7 @@ export default function UploadImage({ handleImageChange }: UploadImageProps) {
     setIsDragging(false);
 
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       processFile(file);
     }
   };
@@ -67,16 +67,17 @@ export default function UploadImage({ handleImageChange }: UploadImageProps) {
         role="button"
         tabIndex={0}
         onClick={handleClick}
-        onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+        onKeyDown={(e) => e.key === "Enter" && handleClick()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`group relative w-full h-64 border-2 border-dashed rounded-xl 
           transition-all duration-300 p-8 flex flex-col items-center justify-center gap-4
           bg-gradient-to-b cursor-pointer
-          ${isDragging 
-            ? 'border-yellow-400 from-yellow-50 scale-[1.02]' 
-            : 'border-blue-400 from-blue-50 hover:border-yellow-400 hover:from-yellow-50'
+          ${
+            isDragging
+              ? "border-yellow-400 from-yellow-50 scale-[1.02]"
+              : "border-blue-400 from-blue-50 hover:border-yellow-400 hover:from-yellow-50"
           } to-white`}
       >
         <Upload className="w-12 h-12 text-blue-400 group-hover:text-yellow-400 transition-colors" />

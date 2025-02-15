@@ -2,7 +2,7 @@ import { BoundingBox } from "@/types/puzzle";
 
 export const compressImage = (
   source: HTMLCanvasElement | HTMLImageElement,
-  quality: number
+  quality: number,
 ): string => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -18,7 +18,7 @@ export const compressImage = (
 
 export const compressImageUrl = async (
   imageUrl: string,
-  quality: number
+  quality: number,
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -43,21 +43,17 @@ export const compressImageUrl = async (
 };
 
 export const scaleDownCanvas = (
-  canvas: HTMLCanvasElement, 
-  maxSize: number
+  canvas: HTMLCanvasElement,
+  maxSize: number,
 ): HTMLCanvasElement => {
-  const scale = Math.min(
-    maxSize / canvas.width,
-    maxSize / canvas.height,
-    1
-  );
+  const scale = Math.min(maxSize / canvas.width, maxSize / canvas.height, 1);
 
   if (scale >= 1) return canvas;
 
   const scaledCanvas = document.createElement("canvas");
   scaledCanvas.width = canvas.width * scale;
   scaledCanvas.height = canvas.height * scale;
-  
+
   const ctx = scaledCanvas.getContext("2d");
   if (ctx) {
     ctx.drawImage(
@@ -69,7 +65,7 @@ export const scaleDownCanvas = (
       0,
       0,
       scaledCanvas.width,
-      scaledCanvas.height
+      scaledCanvas.height,
     );
   }
 
@@ -79,7 +75,7 @@ export const scaleDownCanvas = (
 export const getBoundingBox = (points: number[]): BoundingBox => {
   const xVals = points.filter((_, i) => i % 2 === 0);
   const yVals = points.filter((_, i) => i % 2 !== 0);
-  
+
   return {
     x: Math.min(...xVals),
     y: Math.min(...yVals),
@@ -102,14 +98,14 @@ export const resizeImage = (imageUrl: string): Promise<string> => {
 
       const MAX_WIDTH = 800;
       const MAX_HEIGHT = 600;
-      
+
       let { width, height } = img;
-      
+
       if (width > MAX_WIDTH || height > MAX_HEIGHT) {
         const widthRatio = MAX_WIDTH / width;
         const heightRatio = MAX_HEIGHT / height;
         const scale = Math.min(widthRatio, heightRatio);
-        
+
         width *= scale;
         height *= scale;
       }

@@ -1,7 +1,8 @@
 import { FC, ReactNode } from "react";
 import { Tooltip } from "./Tooltip";
 
-interface ButtonWithTooltipProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonWithTooltipProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   tooltipContent: ReactNode;
   side?: "top" | "right" | "bottom" | "left";

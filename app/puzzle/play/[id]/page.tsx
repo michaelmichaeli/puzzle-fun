@@ -8,7 +8,7 @@ import { LoadingSpinner } from "@/app/components/LoadingSpinner";
 import { Info, Star } from "lucide-react";
 
 interface PlayPageProps {
-  params: { id: string }; 
+  params: { id: string };
 }
 
 export default function PlayPage({ params }: PlayPageProps) {
@@ -17,7 +17,9 @@ export default function PlayPage({ params }: PlayPageProps) {
 
   useEffect(() => {
     const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
-    const selectedPuzzle = savedPuzzles.find((p: Puzzle) => p.id === decodeURIComponent(params.id));
+    const selectedPuzzle = savedPuzzles.find(
+      (p: Puzzle) => p.id === decodeURIComponent(params.id),
+    );
     if (selectedPuzzle) {
       const loadPieceImages = async () => {
         const loadImage = (src: string): Promise<void> => {
@@ -28,7 +30,11 @@ export default function PlayPage({ params }: PlayPageProps) {
           });
         };
 
-        await Promise.all(selectedPuzzle.pieces.map((piece: PieceData) => loadImage(piece.imageSrc)));
+        await Promise.all(
+          selectedPuzzle.pieces.map((piece: PieceData) =>
+            loadImage(piece.imageSrc),
+          ),
+        );
         setPuzzle(selectedPuzzle);
       };
 
@@ -42,7 +48,7 @@ export default function PlayPage({ params }: PlayPageProps) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
         <LoadingSpinner size="lg" />
-        <div className="text-xl font-comic text-[#4DB2EC] animate-pulse">
+        <div className="text-xl font-comic text-primary animate-pulse">
           Getting your puzzle ready...
         </div>
       </div>
@@ -59,20 +65,22 @@ export default function PlayPage({ params }: PlayPageProps) {
                 <h1 className="text-5xl font-comic font-bold text-white">
                   {puzzle.title}
                 </h1>
-                <Star className="w-8 h-8 text-[#FFD800] animate-spin-slow" />
+                <Star className="w-8 h-8 text-secondary animate-spin-slow" />
               </div>
-              
+
               {puzzle.aiContent && (
-                <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-[#4DB2EC]/10 max-w-2xl space-y-3">
+                <div className="bg-white p-6 rounded-2xl shadow-lg border-2 border-primary/10 max-w-2xl space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="p-2 bg-[#FFD800]/10 rounded-full mt-1">
-                      <Info className="w-4 h-4 text-[#FFD800]" />
+                    <div className="p-2 bg-secondary/10 rounded-full mt-1">
+                      <Info className="w-4 h-4 text-secondary" />
                     </div>
                     <div className="space-y-2 font-comic">
-                      <p className="text-[#4DB2EC]">
+                      <h2>Description:</h2>
+                      <p className="text-primary">
                         {puzzle.aiContent.description}
                       </p>
-                      <p className="text-[#4DB2EC] text-sm">
+                      <h2>Context:</h2>
+                      <p className="text-primary text-sm">
                         {puzzle.aiContent.context}
                       </p>
                     </div>
@@ -82,20 +90,20 @@ export default function PlayPage({ params }: PlayPageProps) {
             </div>
           </div>
         </div>
-        
-        <div className="relative rounded-2xl overflow-hidden shadow-xl animate-slideUp bg-white border-2 border-[#4DB2EC]/10">
+
+        <div className="relative rounded-2xl overflow-hidden shadow-xl animate-slideUp bg-white border-2 border-primary/10">
           {puzzle.pieces && puzzle.pieces.length > 0 && puzzle.solution ? (
             <PuzzleSolver pieces={puzzle.pieces} solution={puzzle.solution} />
           ) : (
-            <div className="flex items-center justify-center h-64 text-[#4DB2EC] font-comic">
+            <div className="flex items-center justify-center h-64 text-primary font-comic">
               No puzzle pieces found
             </div>
           )}
         </div>
       </div>
 
-      <div 
-        className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#4DB2EC]/5 to-transparent -z-10" 
+      <div
+        className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary/5 to-transparent -z-10"
         aria-hidden="true"
       />
     </div>

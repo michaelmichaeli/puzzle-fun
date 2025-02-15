@@ -12,7 +12,7 @@ export default function CreatePuzzlePage() {
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleImageChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -41,7 +41,9 @@ export default function CreatePuzzlePage() {
       <div className="p-4 mx-auto animate-fadeIn max-w-7xl">
         <div className="mb-8 animate-slideDown space-y-4">
           <BackButton />
-          <h1 className="text-white text-3xl font-bold font-comic">Create Your Puzzle!</h1>
+          <h1 className="text-white text-3xl font-bold font-comic">
+            Create Your Puzzle!
+          </h1>
           <p className="text-white font-comic">
             Upload an image and create a fun puzzle to share with friends!
           </p>
@@ -62,7 +64,7 @@ export default function CreatePuzzlePage() {
               <PuzzleEditor imageUrl={imageSrc} />
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-lg border-2 border-[#4DB2EC]/10 p-8">
+            <div className="bg-white rounded-2xl shadow-lg border-2 border-primary/10 p-8">
               <UploadImage handleImageChange={handleImageChange} />
             </div>
           )}

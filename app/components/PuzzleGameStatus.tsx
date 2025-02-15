@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Star, RotateCcw, Trophy } from 'lucide-react';
+import { Star, RotateCcw, Trophy } from "lucide-react";
 import { useSoundContext } from "../contexts/SoundContext";
 import { ButtonWithTooltip } from "./ButtonWithTooltip";
 
@@ -11,7 +11,11 @@ interface PuzzleGameStatusProps {
   onRestart: () => void;
 }
 
-export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, progress, onRestart }) => {
+export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({
+  isSolved,
+  progress,
+  onRestart,
+}) => {
   const { playClick } = useSoundContext();
 
   const getMotivationalMessage = () => {
@@ -23,16 +27,16 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
   };
 
   return (
-    <div 
-      className="space-y-6 select-none p-6 bg-white rounded-2xl shadow-lg border-2 border-blue-400/10" 
-      role="status" 
+    <div
+      className="space-y-6 select-none p-6 bg-white rounded-2xl shadow-lg border-2 border-blue-400/10"
+      role="status"
       aria-live="polite"
     >
       <div className="text-center">
         <div className="relative h-14">
-          <div 
+          <div
             className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-              isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              isSolved ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
           >
             <p className="text-blue-400 font-bold text-2xl font-comic flex items-center gap-3">
@@ -41,18 +45,20 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
               <Star className="w-8 h-8 text-yellow-400 animate-spin-slow" />
             </p>
           </div>
-          <div 
+          <div
             className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-              !isSolved ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+              !isSolved ? "opacity-100 scale-100" : "opacity-0 scale-105"
             }`}
           >
-            <p className="text-blue-400 font-comic text-xl">{getMotivationalMessage()}</p>
+            <p className="text-blue-400 font-comic text-xl">
+              {getMotivationalMessage()}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="flex gap-4 items-center">
-        <div 
+        <div
           className="flex-1 h-14 bg-blue-400/10 rounded-full overflow-hidden relative shadow-inner"
           role="progressbar"
           aria-valuenow={Math.round(progress * 100)}
@@ -61,11 +67,11 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
         >
           <div
             className={`h-full transition-all duration-500 ease-out relative ${
-              progress <= 0.33 
-                ? 'bg-pink-500' 
-                : progress <= 0.66 
-                ? 'bg-yellow-500' 
-                : 'bg-green-500'
+              progress <= 0.33
+                ? "bg-pink-500"
+                : progress <= 0.66
+                  ? "bg-yellow-500"
+                  : "bg-green-500"
             }`}
             style={{ width: `${progress * 100}%` }}
           >
@@ -75,7 +81,7 @@ export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({ isSolved, pr
             {Math.round(progress * 100)}%
           </span>
         </div>
-      
+
         <ButtonWithTooltip
           onClick={() => {
             playClick();

@@ -14,9 +14,7 @@ export default function Footer() {
         <div className="container mx-auto px-4 py-8 relative">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-2">
-              <h3 className="font-comic text-blue-400 font-bold">
-                PuzzleFun!
-              </h3>
+              <h3 className="font-comic text-blue-400 font-bold">PuzzleFun!</h3>
               <p className="text-blue-400/70">
                 Create and solve amazing puzzles together
               </p>

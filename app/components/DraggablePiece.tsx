@@ -17,7 +17,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   onDrag,
   position,
   isNearTarget = false,
-  animate = false
+  animate = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -37,9 +37,12 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
     };
   }, [piece]);
 
-  const handleDrag = useCallback((_: DraggableEvent, data: DraggableData) => {
-    onDrag(piece.id, data.x, data.y);
-  }, [piece.id, onDrag]);
+  const handleDrag = useCallback(
+    (_: DraggableEvent, data: DraggableData) => {
+      onDrag(piece.id, data.x, data.y);
+    },
+    [piece.id, onDrag],
+  );
 
   const handleStart = useCallback(() => {
     setIsDragging(true);
@@ -62,19 +65,21 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
       <div
         ref={dragRef}
         className={`absolute touch-none select-none
-          ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}
-          ${animate ? 'transition-transform duration-500 ease-in-out' : ''}`}
+          ${isDragging ? "z-50 cursor-grabbing" : "z-10 cursor-grab"}
+          ${animate ? "transition-transform duration-500 ease-in-out" : ""}`}
         style={{
-          touchAction: 'none'
+          touchAction: "none",
         }}
       >
-        <div 
+        <div
           className={`relative transition-shadow duration-200 rounded-sm
-            ${isNearTarget 
-              ? 'shadow-[0_0_15px_rgba(34,197,94,0.4)]'
-              : isDragging 
-                ? 'shadow-[0_0_20px_rgba(0,0,0,0.4)]' 
-                : ''}`}
+            ${
+              isNearTarget
+                ? "shadow-[0_0_15px_rgba(34,197,94,0.4)]"
+                : isDragging
+                  ? "shadow-[0_0_20px_rgba(0,0,0,0.4)]"
+                  : ""
+            }`}
         >
           <canvas
             ref={canvasRef}
@@ -84,7 +89,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
             style={{
               width: piece.width,
               height: piece.height,
-              WebkitTouchCallout: 'none'
+              WebkitTouchCallout: "none",
             }}
           />
         </div>

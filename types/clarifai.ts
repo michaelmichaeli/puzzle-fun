@@ -14,8 +14,8 @@ export interface ClarifaiImageInput {
     image: {
       url?: string;
       base64?: string;
-    }
-  }
+    };
+  };
 }
 
 export interface ClarifaiPredictionRequest {

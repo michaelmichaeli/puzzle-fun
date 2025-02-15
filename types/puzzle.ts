@@ -46,8 +46,8 @@ export interface ConnectedGroup {
     [pieceId: number]: {
       relativeX: number;
       relativeY: number;
-    }
-  }
+    };
+  };
 }
 
 export interface PieceData {

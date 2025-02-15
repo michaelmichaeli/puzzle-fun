@@ -4,8 +4,8 @@ A modern, interactive puzzle game where you can create and solve custom puzzles 
 
 ![image](https://github.com/user-attachments/assets/1c2d75cd-fa9d-49dc-8cf1-91ed3ce52153)
 
-
 ## 🎮 Play Now
+
 [Play Now](https://puzzle-game.vercel.app)
 
 ## ✨ Features
@@ -45,12 +45,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🎯 How to Play
 
 1. **Create a Puzzle**
+
    - Click "Create New Puzzle"
    - Upload an image
    - Draw lines to create pieces
    - Save your puzzle
 
 2. **Solve Puzzles**
+
    - Select a puzzle
    - Drag pieces from the bottom
    - Drop them in correct positions
@@ -60,7 +62,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ![image](https://github.com/user-attachments/assets/a45b6451-7bb1-42e8-affe-7115f1af55ce)
 ![image](https://github.com/user-attachments/assets/2b896b56-9bf2-4508-8792-b2a9780cef96)
-
 
 ## 🤝 Contributing
 

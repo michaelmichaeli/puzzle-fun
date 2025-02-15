@@ -35,12 +35,8 @@ export default function Header() {
         <Tooltip content="Return to home page">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform group-hover:rotate-12 overflow-hidden">
-              <div
-                className="relative w-full h-full flex items-center justify-center"
-              >
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-pink-500"
-                />
+              <div className="relative w-full h-full flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-pink-500" />
                 <Puzzle className="w-8 h-8 text-white relative z-10 drop-shadow-md fill-current stroke-0" />
               </div>
             </div>

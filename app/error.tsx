@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Error({ error }: { error: Error }) {
   const router = useRouter();
 
   useEffect(() => {
-    console.error('An error occurred:', error);
+    console.error("An error occurred:", error);
   }, [error]);
 
   return (
