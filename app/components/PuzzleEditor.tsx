@@ -37,37 +37,37 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
 		lines,
 	} = usePuzzleEditor({ imageUrl });
 
-	const generateAiContent = async () => {
-		setError(null);
-		setIsAiContentLoading(true);
+const generateAiContent = useCallback(async () => {
+  setError(null);
+  setIsAiContentLoading(true);
 
-		try {
-			const response = await fetch("/api/generate-ai-content", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ imageUrl }),
-			});
+  try {
+    const response = await fetch("/api/generate-ai-content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageUrl }),
+    });
 
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(errorText || "Failed to generate AI content");
-			}
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to generate AI content");
+    }
 
-			const data = await response.json();
-			if (!data.title) {
-				throw new Error("Invalid AI response: missing title");
-			}
+    const data = await response.json();
+    if (!data.title) {
+      throw new Error("Invalid AI response: missing title");
+    }
 
-			setAiContent(data);
-			setTitle(data.title);
-		} catch (error) {
-			const errorMessage =
-				error instanceof Error ? error.message : "An unknown error occurred";
-			setError(errorMessage);
-		} finally {
-			setIsAiContentLoading(false);
-		}
-	};
+    setAiContent(data);
+    setTitle(data.title);
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    setError(errorMessage);
+  } finally {
+    setIsAiContentLoading(false);
+  }
+}, [imageUrl, setTitle]);
 
 	useEffect(() => {
 		const img = new Image();
@@ -88,7 +88,7 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
 			setError("Failed to load image");
 			setImageLoadProgress(0);
 		};
-	}, [imageUrl]);
+	}, [imageUrl, generateAiContent]);
 
 	const handleBreakAndSave = async () => {
 		if (!title.trim()) {

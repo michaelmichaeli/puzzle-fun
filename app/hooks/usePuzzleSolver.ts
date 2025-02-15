@@ -129,7 +129,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       ...prev,
       [pieceId]: finalPosition
     }));
-  }, [pieces, findExpectedCell, getGridCellCoordinates, SNAPTHRESHOLD, solution.grid]);
+  }, [findExpectedCell, getGridCellCoordinates, solution.grid]);
 
   const getCurrentMatrix = useCallback((): BoardMatrix => {
     const matrix: number[][] = Array(solution.rows).fill(null)
@@ -159,7 +159,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       cols: solution.cols,
       grid: matrix
     };
-  }, [pieces, positions, solution.rows, solution.cols, getGridCellCoordinates, findExpectedCell, solution.grid]);
+  }, [positions, solution.rows, solution.cols, getGridCellCoordinates, findExpectedCell, solution.grid]);
 
   const isSolved = useCallback(() => {
     if (isGameCompleted) return true;
@@ -182,7 +182,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     }
     
     return isCorrect;
-  }, [getCurrentMatrix, solution, pieces, isGameCompleted]);
+  }, [getCurrentMatrix, solution, isGameCompleted]);
 
   const getProgress = useCallback((): number => {
     const currentMatrix = getCurrentMatrix();

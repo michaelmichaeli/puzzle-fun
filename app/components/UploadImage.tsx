@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 "use client";
 
 import { Image, Upload } from "lucide-react";
@@ -64,7 +65,9 @@ export default function UploadImage({ handleImageChange }: UploadImageProps) {
     <div className="text-center space-y-6">
       <div
         role="button"
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(e) => e.key === 'Enter' && handleClick()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

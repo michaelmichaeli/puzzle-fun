@@ -4,6 +4,7 @@ import { Puzzle } from "@/types/puzzle";
 import Link from "next/link";
 import { Puzzle as PuzzleIcon, Clock, Info } from "lucide-react";
 import { useSoundContext } from "../contexts/SoundContext";
+import Image from "next/image";
 
 export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
   const { playClick } = useSoundContext();
@@ -23,10 +24,13 @@ export default function PuzzleCard({ puzzle }: { puzzle: Puzzle }) {
         className="block"
       >
         <div className="aspect-video relative overflow-hidden">
-          <img
+          <Image
             src={puzzle.imageUrl}
             alt={`Preview of puzzle: ${puzzle.title}`}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transform group-hover:scale-110 transition-transform duration-500"
+            priority={true}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>

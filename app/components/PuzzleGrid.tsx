@@ -11,8 +11,7 @@ interface PuzzleGridProps {
 
 export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ 
   solution, 
-  pieces, 
-  currentPositions
+  pieces
 }) => {
   const pieceDimensions = useMemo(() => {
     const dimensions: { [key: string]: { width: number; height: number } } = {};
@@ -69,38 +68,6 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({
     height: gridDimensions.height
   }), [gridDimensions]);
 
-  const filledCells = useMemo(() => {
-    const filled: { [key: string]: number } = {};
-    Object.entries(currentPositions).forEach(([id, pos]) => {
-      let nearestRow = -1;
-      let nearestCol = -1;
-      let minDistance = Infinity;
-
-      for (let row = 0; row < solution.rows; row++) {
-        for (let col = 0; col < solution.cols; col++) {
-          const dims = pieceDimensions[`${row}-${col}`];
-          if (dims) {
-            const cellX = col * dims.width;
-            const cellY = row * dims.height;
-            const distance = Math.sqrt(
-              Math.pow(pos.x - cellX, 2) + Math.pow(pos.y - cellY, 2)
-            );
-            if (distance < minDistance) {
-              minDistance = distance;
-              nearestRow = row;
-              nearestCol = col;
-            }
-          }
-        }
-      }
-
-      if (nearestRow >= 0 && nearestCol >= 0) {
-        filled[`${nearestRow}-${nearestCol}`] = parseInt(id);
-      }
-    });
-    return filled;
-  }, [currentPositions, pieceDimensions, solution.rows, solution.cols]);
-
   const rows = useMemo(() => {
     const result = [];
     for (let row = 0; row < solution.rows; row++) {
@@ -135,7 +102,7 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({
       );
     }
     return result;
-  }, [solution.rows, solution.cols, solution.grid, pieceDimensions, filledCells]);
+  }, [solution.rows, solution.cols, solution.grid, pieceDimensions]);
 
   return (
     <div 
