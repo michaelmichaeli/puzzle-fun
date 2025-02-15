@@ -11,6 +11,12 @@ export default function Home() {
 	const [puzzles, setPuzzles] = useState<Puzzle[]>([]);
 	const { playClick } = useSoundContext();
 
+	const handleDeletePuzzle = (id: string) => {
+		const updatedPuzzles = puzzles.filter((puzzle) => puzzle.id !== id);
+		setPuzzles(updatedPuzzles);
+		localStorage.setItem("puzzles", JSON.stringify(updatedPuzzles));
+	};
+
 	useEffect(() => {
 		const loadPuzzles = () => {
 			try {
@@ -74,7 +80,11 @@ export default function Home() {
 					</header>
 					<div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{puzzles.map((puzzle) => (
-							<PuzzleCard key={puzzle.id} puzzle={puzzle} />
+							<PuzzleCard
+								key={puzzle.id}
+								puzzle={puzzle}
+								onDelete={handleDeletePuzzle}
+							/>
 						))}
 					</div>
 				</section>
