@@ -33,13 +33,22 @@ export async function POST(req: NextRequest) {
       if (!response.outputs?.[0]?.data?.concepts) {
         return new Response("Invalid response from Clarifai", { status: 500 });
       }
+ 
       const concepts = response.outputs[0].data.concepts
         .slice(0, 5)
-        .map((c) => c.name);
+        .map((c) => ({ name: c.name, confidence: c.value }));
+
+      const conceptDescriptions = concepts
+        .map(c => `${c.name} (${Math.round(c.confidence * 100)}% confidence)`)
+        .join(", ");
+
+      const puzzleContext = `This puzzle contains elements of: ${conceptDescriptions}. 
+        These elements create a complete image that you'll be assembling.`;
+
       const aiContent: AiGeneratedContent = {
-        title: concepts[0] || "Untitled",
-        description: `This image appears to show ${concepts.join(", ")}.`,
-        context: `The image was analyzed using Clarifai's general image recognition model, which identified these key elements with high confidence.`,
+        title: concepts[0]?.name || "Puzzle",
+        description: `This puzzle shows ${concepts[0].name} (${Math.round(concepts[0].confidence * 100)}% confidence).`,
+        context: puzzleContext,
       };
 
       return new Response(JSON.stringify(aiContent), {
