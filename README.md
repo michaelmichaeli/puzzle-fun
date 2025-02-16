@@ -2,7 +2,7 @@
 
 A modern, interactive puzzle game where you can create and solve custom puzzles from your own images.
 
-![image](https://github.com/user-attachments/assets/1c2d75cd-fa9d-49dc-8cf1-91ed3ce52153)
+![image](https://github.com/user-attachments/assets/780e57a0-7ce3-40b1-a806-118702744e20)
 
 ## 🎮 Play Now
 
@@ -60,8 +60,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📸 Screenshots
 
-![image](https://github.com/user-attachments/assets/a45b6451-7bb1-42e8-affe-7115f1af55ce)
-![image](https://github.com/user-attachments/assets/2b896b56-9bf2-4508-8792-b2a9780cef96)
+![image](https://github.com/user-attachments/assets/96d6e10c-f283-443e-a5c5-cb4fa5fb007f)
+
+![image](https://github.com/user-attachments/assets/02266e8c-806f-4faf-970e-3944376b71dd)
 
 ## 🤝 Contributing
 
