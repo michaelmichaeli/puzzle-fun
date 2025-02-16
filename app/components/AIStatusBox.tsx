@@ -9,7 +9,7 @@ export function AIStatusBox({
   isLoading,
   error,
   aiContent,
-  onRegenerate,
+  onRegenerate
 }: AIStatusBoxProps) {
   return (
     <div className="space-y-6">

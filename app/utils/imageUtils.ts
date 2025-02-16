@@ -2,7 +2,7 @@ import { BoundingBox } from "@/types/puzzle";
 
 export const compressImage = (
   source: HTMLCanvasElement | HTMLImageElement,
-  quality: number,
+  quality: number
 ): string => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -18,7 +18,7 @@ export const compressImage = (
 
 export const compressImageUrl = async (
   imageUrl: string,
-  quality: number,
+  quality: number
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -44,7 +44,7 @@ export const compressImageUrl = async (
 
 export const scaleDownCanvas = (
   canvas: HTMLCanvasElement,
-  maxSize: number,
+  maxSize: number
 ): HTMLCanvasElement => {
   const scale = Math.min(maxSize / canvas.width, maxSize / canvas.height, 1);
 
@@ -65,7 +65,7 @@ export const scaleDownCanvas = (
       0,
       0,
       scaledCanvas.width,
-      scaledCanvas.height,
+      scaledCanvas.height
     );
   }
 
@@ -80,7 +80,7 @@ export const getBoundingBox = (points: number[]): BoundingBox => {
     x: Math.min(...xVals),
     y: Math.min(...yVals),
     width: Math.max(...xVals) - Math.min(...xVals),
-    height: Math.max(...yVals) - Math.min(...yVals),
+    height: Math.max(...yVals) - Math.min(...yVals)
   };
 };
 

@@ -12,7 +12,7 @@ export const Tooltip: FC<TooltipProps> = ({
   children,
   content,
   side = "top",
-  align = "center",
+  align = "center"
 }) => {
   return (
     <RadixTooltip.Root>

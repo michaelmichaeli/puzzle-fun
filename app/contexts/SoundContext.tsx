@@ -35,7 +35,7 @@ class SoundManager {
   createOscillator(
     frequency: number,
     duration: number,
-    type: OscillatorType = "sine",
+    type: OscillatorType = "sine"
   ) {
     const ctx = this.initialize();
     if (!ctx) return;
@@ -51,7 +51,7 @@ class SoundManager {
     gainNode.gain.setValueAtTime(this.volume * 0.5, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(
       0.001,
-      ctx.currentTime + duration,
+      ctx.currentTime + duration
     );
 
     oscillator.start(ctx.currentTime);
@@ -109,7 +109,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
         { freq: 987.77, duration: 0.08 }, // B5
         { freq: 783.99, duration: 0.08 }, // G5
         { freq: 659.25, duration: 0.08 }, // E5
-        { freq: 523.25, duration: 0.3 }, // C5
+        { freq: 523.25, duration: 0.3 } // C5
       ];
 
       notes.forEach(({ freq, duration }, i) => {
@@ -117,7 +117,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
           soundManager.current.createOscillator(
             freq,
             duration,
-            i < 4 ? "triangle" : "square",
+            i < 4 ? "triangle" : "square"
           );
         }, i * 120);
       });
@@ -133,7 +133,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       oscillator.frequency.setValueAtTime(800, ctx.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(
         200,
-        ctx.currentTime + 0.3,
+        ctx.currentTime + 0.3
       );
 
       oscillator.connect(gainNode);
@@ -141,13 +141,13 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
       gainNode.gain.setValueAtTime(
         soundManager.current.volume * 0.3,
-        ctx.currentTime,
+        ctx.currentTime
       );
       gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + 0.3);
-    },
+    }
   };
 
   return (
@@ -160,7 +160,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
         playClick: () => playIfEnabled(effects.playClick),
         playSuccess: () => playIfEnabled(effects.playSuccess),
         playComplete: () => playIfEnabled(effects.playComplete),
-        playDrawLine: () => playIfEnabled(effects.playDrawLine),
+        playDrawLine: () => playIfEnabled(effects.playDrawLine)
       }}
     >
       {children}

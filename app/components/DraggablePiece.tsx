@@ -17,7 +17,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
   onDrag,
   position,
   isNearTarget = false,
-  animate = false,
+  animate = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -41,7 +41,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
     (_: DraggableEvent, data: DraggableData) => {
       onDrag(piece.id, data.x, data.y);
     },
-    [piece.id, onDrag],
+    [piece.id, onDrag]
   );
 
   const handleStart = useCallback(() => {
@@ -68,7 +68,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
           ${isDragging ? "z-50 cursor-grabbing" : "z-10 cursor-grab"}
           ${animate ? "transition-transform duration-500 ease-in-out" : ""}`}
         style={{
-          touchAction: "none",
+          touchAction: "none"
         }}
       >
         <div
@@ -89,7 +89,7 @@ export const DraggablePiece: React.FC<DraggablePieceProps> = ({
             style={{
               width: piece.width,
               height: piece.height,
-              WebkitTouchCallout: "none",
+              WebkitTouchCallout: "none"
             }}
           />
         </div>

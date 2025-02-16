@@ -14,7 +14,7 @@ interface PuzzleGameStatusProps {
 export const PuzzleGameStatus: React.FC<PuzzleGameStatusProps> = ({
   isSolved,
   progress,
-  onRestart,
+  onRestart
 }) => {
   const { playClick } = useSoundContext();
 

@@ -3,10 +3,8 @@ import { AiGeneratedContent } from "@/types/puzzle";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY as string,
+  apiKey: process.env.OPENAI_API_KEY as string
 });
 
 export async function POST(req: NextRequest) {
@@ -31,45 +29,50 @@ export async function POST(req: NextRequest) {
           3. A contextual explanation that describes the image's contents and significance
           Format your response as:
           <title> | <description> | <context>
-          Use the '|' separator without line breaks.`,
+          Use the '|' separator without line breaks.`
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Analyze this image and return its Title, Description, and Context in a structured format." },
+            {
+              type: "text",
+              text: "Analyze this image and return its Title, Description, and Context in a structured format."
+            },
             {
               type: "image_url",
               image_url: {
                 url: imageUrl
               }
-            },
-          ],
-        },
+            }
+          ]
+        }
       ];
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages,
-        max_tokens: 700,
+        max_tokens: 700
       });
 
       const analysis = response.choices[0].message?.content || "";
-      const [title, description, context] = analysis.split("|").map((str: string) => str.trim());
+      const [title, description, context] = analysis
+        .split("|")
+        .map((str: string) => str.trim());
 
       const aiContent: AiGeneratedContent = {
         title: title || "Puzzle",
         description: description || "An intriguing puzzle image",
-        context: context || "A fascinating puzzle waiting to be solved",
+        context: context || "A fascinating puzzle waiting to be solved"
       };
 
       return new Response(JSON.stringify(aiContent), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       });
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
       return new Response(`Error analyzing image: ${errorMessage}`, {
-        status: 500,
+        status: 500
       });
     }
   } catch {

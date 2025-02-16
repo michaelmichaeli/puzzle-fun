@@ -7,7 +7,7 @@ interface SkipLinkProps {
 
 export const SkipLink: FC<SkipLinkProps> = ({
   targetId,
-  label = "Skip to main content",
+  label = "Skip to main content"
 }) => {
   return (
     <a

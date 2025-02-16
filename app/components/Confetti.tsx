@@ -11,7 +11,7 @@ interface ConfettiProps {
 export default function Confetti({ isActive }: ConfettiProps) {
   const [dimensions, setDimensions] = useState({
     width: 0,
-    height: 0,
+    height: 0
   });
   const { playComplete } = useSoundContext();
 
@@ -19,7 +19,7 @@ export default function Confetti({ isActive }: ConfettiProps) {
     const updateDimensions = () => {
       setDimensions({
         width: window.innerWidth,
-        height: window.innerHeight,
+        height: window.innerHeight
       });
     };
 
@@ -44,13 +44,13 @@ export default function Confetti({ isActive }: ConfettiProps) {
         "rgb(59 130 246)", // blue-500 for primary
         "rgb(250 204 21)", // yellow-400 for secondary
         "rgb(236 72 153)", // pink-500 for accent-pink
-        "rgb(34 197 94)", // green-500 for accent-green
+        "rgb(34 197 94)" // green-500 for accent-green
       ]}
       confettiSource={{
         x: dimensions.width / 2,
         y: dimensions.height * 0.4,
         w: 10,
-        h: 20,
+        h: 20
       }}
       initialVelocityX={4}
       initialVelocityY={8}
@@ -61,7 +61,7 @@ export default function Confetti({ isActive }: ConfettiProps) {
         inset: "0",
         margin: "auto",
         zIndex: 1000,
-        pointerEvents: "none",
+        pointerEvents: "none"
       }}
     />
   );

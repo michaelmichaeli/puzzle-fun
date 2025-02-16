@@ -35,7 +35,7 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
     handlePointerDown,
     breakImage,
     resetLines,
-    lines,
+    lines
   } = usePuzzleEditor({ imageUrl });
 
   const generateAiContent = useCallback(async () => {
@@ -46,7 +46,7 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
       const response = await fetch("/api/generate-ai-content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl }),
+        body: JSON.stringify({ imageUrl })
       });
 
       if (!response.ok) {
@@ -150,7 +150,7 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
         widthRatio: piece.width / canvasRef.current!.width,
         heightRatio: piece.height / canvasRef.current!.height,
         connections: piece.connections,
-        shapePath: [],
+        shapePath: []
       })),
       originalWidth: canvasRef.current!.width,
       originalHeight: canvasRef.current!.height,
@@ -158,8 +158,8 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
       solution: {
         rows: maxRow,
         cols: maxCol,
-        grid,
-      },
+        grid
+      }
     };
 
     addPuzzle(puzzle);

@@ -3,6 +3,16 @@ export interface Point {
   y: number;
 }
 
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface GridCell {
+  row: number;
+  col: number;
+}
+
 export interface Lines {
   horizontal: number[];
   vertical: number[];
@@ -23,10 +33,19 @@ export interface Piece {
   width: number;
   height: number;
   connections: PieceConnection;
-  gridPosition: {
-    row: number;
-    col: number;
-  };
+  gridPosition: GridCell;
+}
+
+export interface ContainerDimensions {
+  width: number;
+  height: number;
+}
+
+export interface BoardDimensions {
+  totalWidth: number;
+  totalHeight: number;
+  startX: number;
+  startY: number;
 }
 
 export interface UsePuzzleEditorProps {
@@ -63,13 +82,8 @@ export interface PieceData {
   connections: PieceConnection;
 }
 
-export interface PiecePosition {
-  x: number;
-  y: number;
-}
-
-export interface PiecePositions {
-  [pieceId: number]: PiecePosition;
+export interface Positions {
+  [id: number]: Position;
 }
 
 export interface AiGeneratedContent {

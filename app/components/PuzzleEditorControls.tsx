@@ -16,7 +16,7 @@ export function PuzzleEditorControls({
   pieces,
   lines,
   handleBreakAndSave,
-  handleResetLines,
+  handleResetLines
 }: PuzzleEditorControlsProps) {
   const canReset =
     pieces.length > 0 ||

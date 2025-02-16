@@ -17,7 +17,7 @@ export function PuzzleEditorCanvas({
   handlePointerMove,
   handlePointerDown,
   pieces,
-  playDrawLine,
+  playDrawLine
 }: PuzzleEditorCanvasProps) {
   const handlePointerEvent = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
@@ -66,7 +66,7 @@ export function PuzzleEditorCanvas({
               cursor: "crosshair",
               maxWidth: "100%",
               maxHeight: "100%",
-              objectFit: "contain",
+              objectFit: "contain"
             }}
           />
         </div>

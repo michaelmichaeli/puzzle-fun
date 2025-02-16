@@ -14,7 +14,7 @@ export function TitleInput({
   title,
   onTitleChange,
   onRegenerate,
-  isRegenerating,
+  isRegenerating
 }: TitleInputProps) {
   return (
     <div className="flex gap-4 items-center bg-white p-6 rounded-2xl shadow-md border-2 border-blue-400/10">

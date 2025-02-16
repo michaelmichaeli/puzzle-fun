@@ -16,7 +16,7 @@ interface PuzzleSolverProps {
 
 export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
   pieces,
-  solution,
+  solution
 }) => {
   const {
     positions,
@@ -25,7 +25,7 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
     shufflePieces,
     getProgress,
     restart,
-    isAnimating,
+    isAnimating
   } = usePuzzleSolver({ pieces, solution });
   const { playSuccess } = useSoundContext();
 
@@ -44,7 +44,7 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
               };
               img.onerror = () => resolve();
             });
-          }),
+          })
         );
 
         const container = document.getElementById("puzzle-board");
@@ -96,7 +96,7 @@ export const PuzzleSolver: React.FC<PuzzleSolverProps> = ({
         style={{
           touchAction: "none",
           maxWidth: "100vw",
-          minWidth: "100%",
+          minWidth: "100%"
         }}
         role="grid"
         tabIndex={0}

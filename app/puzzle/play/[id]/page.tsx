@@ -18,7 +18,7 @@ export default function PlayPage({ params }: PlayPageProps) {
   useEffect(() => {
     const savedPuzzles = JSON.parse(localStorage.getItem("puzzles") || "[]");
     const selectedPuzzle = savedPuzzles.find(
-      (p: Puzzle) => p.id === decodeURIComponent(params.id),
+      (p: Puzzle) => p.id === decodeURIComponent(params.id)
     );
     if (selectedPuzzle) {
       const loadPieceImages = async () => {
@@ -32,8 +32,8 @@ export default function PlayPage({ params }: PlayPageProps) {
 
         await Promise.all(
           selectedPuzzle.pieces.map((piece: PieceData) =>
-            loadImage(piece.imageSrc),
-          ),
+            loadImage(piece.imageSrc)
+          )
         );
         setPuzzle(selectedPuzzle);
       };

@@ -4,7 +4,7 @@ import {
   Point,
   Lines,
   Piece,
-  UsePuzzleEditorProps,
+  UsePuzzleEditorProps
 } from "@/types/puzzle";
 
 export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
@@ -82,7 +82,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
               nearX - (threshold * scale) / 2,
               0,
               threshold * scale,
-              ctx.canvas.height,
+              ctx.canvas.height
             );
           }
           if (existingHorizontal) {
@@ -91,7 +91,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
               0,
               nearY - (threshold * scale) / 2,
               ctx.canvas.width,
-              threshold * scale,
+              threshold * scale
             );
           }
 
@@ -101,14 +101,14 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
               0,
               ctx.canvas.height - edgeThreshold * scale,
               ctx.canvas.width,
-              edgeThreshold * scale,
+              edgeThreshold * scale
             );
             ctx.fillRect(0, 0, edgeThreshold * scale, ctx.canvas.height);
             ctx.fillRect(
               ctx.canvas.width - edgeThreshold * scale,
               0,
               edgeThreshold * scale,
-              ctx.canvas.height,
+              ctx.canvas.height
             );
           }
 
@@ -141,7 +141,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
         }
       }
     },
-    [image, lines, hoverPoint, scale, originalDimensions],
+    [image, lines, hoverPoint, scale, originalDimensions]
   );
 
   useEffect(() => {
@@ -160,7 +160,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
             const containerHeight = container.clientHeight - 32;
             const newScale = Math.min(
               containerWidth / img.width,
-              containerHeight / img.height,
+              containerHeight / img.height
             );
             setScale(newScale);
 
@@ -173,7 +173,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
                 0,
                 0,
                 img.width * newScale,
-                img.height * newScale,
+                img.height * newScale
               );
               drawLines(ctx);
             }
@@ -191,7 +191,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
   }, [drawLines, image, lines, hoverPoint, scale]);
 
   const handlePointerMove = useCallback(
-    (e: MouseEvent | TouchEvent) => {
+    (event: MouseEvent | TouchEvent) => {
       const canvas = canvasRef.current;
       if (!canvas || !image || !originalDimensions) return;
 
@@ -199,11 +199,11 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
       let clientX: number;
       let clientY: number;
 
-      if (e instanceof MouseEvent) {
-        clientX = e.clientX;
-        clientY = e.clientY;
+      if (event instanceof MouseEvent) {
+        clientX = event.clientX;
+        clientY = event.clientY;
       } else {
-        const touch = e.touches[0];
+        const touch = event.touches[0];
         clientX = touch.clientX;
         clientY = touch.clientY;
       }
@@ -217,59 +217,62 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
         setHoverPoint(null);
       }
     },
-    [image, originalDimensions],
+    [image, originalDimensions]
   );
 
-  const handlePointerDown = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!hoverPoint || !image || !originalDimensions || !canvasRef.current)
-      return false;
+  const handlePointerDown = useCallback(
+    (_event: MouseEvent | TouchEvent) => {
+      if (!hoverPoint || !image || !originalDimensions || !canvasRef.current)
+        return false;
 
-    const x =
-      (hoverPoint.x / canvasRef.current.width) * originalDimensions.width;
-    const y =
-      (hoverPoint.y / canvasRef.current.height) * originalDimensions.height;
+      const x =
+        (hoverPoint.x / canvasRef.current.width) * originalDimensions.width;
+      const y =
+        (hoverPoint.y / canvasRef.current.height) * originalDimensions.height;
 
-    const threshold = originalDimensions.width * 0.03;
-    const existingVertical = lines.vertical.find(
-      (vx) => Math.abs(vx - x) < threshold,
-    );
-    const existingHorizontal = lines.horizontal.find(
-      (vy) => Math.abs(vy - y) < threshold,
-    );
+      const threshold = originalDimensions.width * 0.03;
+      const existingVertical = lines.vertical.find(
+        (vx) => Math.abs(vx - x) < threshold
+      );
+      const existingHorizontal = lines.horizontal.find(
+        (vy) => Math.abs(vy - y) < threshold
+      );
 
-    const edgeThreshold = threshold;
-    const isTooCloseToEdge =
-      x < edgeThreshold ||
-      x > originalDimensions.width - edgeThreshold ||
-      y < edgeThreshold ||
-      y > originalDimensions.height - edgeThreshold;
+      const edgeThreshold = threshold;
+      const isTooCloseToEdge =
+        x < edgeThreshold ||
+        x > originalDimensions.width - edgeThreshold ||
+        y < edgeThreshold ||
+        y > originalDimensions.height - edgeThreshold;
 
-    const isValid =
-      !isTooCloseToEdge && (!existingVertical || !existingHorizontal);
-    if (isValid) {
-      setLines((prev) => ({
-        horizontal: existingHorizontal
-          ? prev.horizontal
-          : [...prev.horizontal, y].sort((a, b) => a - b),
-        vertical: existingVertical
-          ? prev.vertical
-          : [...prev.vertical, x].sort((a, b) => a - b),
-      }));
-    }
-    return !isValid;
-  }, [hoverPoint, image, originalDimensions, lines]);
+      const isValid =
+        !isTooCloseToEdge && (!existingVertical || !existingHorizontal);
+      if (isValid) {
+        setLines((prev) => ({
+          horizontal: existingHorizontal
+            ? prev.horizontal
+            : [...prev.horizontal, y].sort((a, b) => a - b),
+          vertical: existingVertical
+            ? prev.vertical
+            : [...prev.vertical, x].sort((a, b) => a - b)
+        }));
+      }
+      return !isValid;
+    },
+    [hoverPoint, image, originalDimensions, lines]
+  );
 
   const calculateConnections = (
     row: number,
     col: number,
     totalRows: number,
-    totalCols: number,
+    totalCols: number
   ): PieceConnection => {
     return {
       top: row > 0 ? (row - 1) * totalCols + col : undefined,
       right: col < totalCols - 1 ? row * totalCols + (col + 1) : undefined,
       bottom: row < totalRows - 1 ? (row + 1) * totalCols + col : undefined,
-      left: col > 0 ? row * totalCols + (col - 1) : undefined,
+      left: col > 0 ? row * totalCols + (col - 1) : undefined
     };
   };
 
@@ -291,12 +294,12 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     const allVertical = [
       0,
       ...vertical.filter((x) => x >= 0 && x <= originalDimensions.width),
-      originalDimensions.width,
+      originalDimensions.width
     ];
     const allHorizontal = [
       0,
       ...horizontal.filter((y) => y >= 0 && y <= originalDimensions.height),
-      originalDimensions.height,
+      originalDimensions.height
     ];
 
     const totalRows = allHorizontal.length - 1;
@@ -324,14 +327,14 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
             0,
             0,
             width,
-            height,
+            height
           );
 
           const connections = calculateConnections(
             row,
             col,
             totalRows,
-            totalCols,
+            totalCols
           );
 
           newPieces.push({
@@ -342,7 +345,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
             width,
             height,
             connections,
-            gridPosition: { row, col },
+            gridPosition: { row, col }
           });
           id++;
         }
@@ -365,6 +368,6 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     handlePointerMove,
     handlePointerDown,
     breakImage,
-    resetLines,
+    resetLines
   };
 };

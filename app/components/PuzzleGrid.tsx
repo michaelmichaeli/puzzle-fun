@@ -20,7 +20,7 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces }) => {
           if (piece) {
             dimensions[`${row}-${col}`] = {
               width: piece.width,
-              height: piece.height,
+              height: piece.height
             };
           }
         }
@@ -61,9 +61,9 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces }) => {
       transform: "translate(-50%, -50%)",
       zIndex: 0,
       width: gridDimensions.width,
-      height: gridDimensions.height,
+      height: gridDimensions.height
     }),
-    [gridDimensions],
+    [gridDimensions]
   );
 
   const rows = useMemo(() => {
@@ -74,7 +74,7 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces }) => {
         const pieceId = solution.grid[row][col];
         const dims = pieceDimensions[`${row}-${col}`] || {
           width: 100,
-          height: 100,
+          height: 100
         };
 
         rowCells.push(
@@ -83,19 +83,19 @@ export const PuzzleGrid: React.FC<PuzzleGridProps> = ({ solution, pieces }) => {
             className={`${pieceId} relative border-2 border-gray-600/50 bg-gray-800/30 shadow-inner rounded-sm`}
             style={{
               width: dims.width,
-              height: dims.height,
+              height: dims.height
             }}
           >
             <span
               className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm`}
             ></span>
-          </div>,
+          </div>
         );
       }
       result.push(
         <div key={row} className="flex justify-center items-center">
           {rowCells}
-        </div>,
+        </div>
       );
     }
     return result;

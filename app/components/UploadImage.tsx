@@ -29,10 +29,10 @@ export default function UploadImage({ handleImageChange }: UploadImageProps) {
 
     const fakeEvent = {
       target: {
-        files: dataTransfer.files,
+        files: dataTransfer.files
       },
       preventDefault: () => {},
-      stopPropagation: () => {},
+      stopPropagation: () => {}
     } as unknown as React.ChangeEvent<HTMLInputElement>;
 
     handleImageChange(fakeEvent);

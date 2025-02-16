@@ -1,6 +1,16 @@
 import { useState, useCallback } from "react";
-import { PieceData, BoardMatrix } from "@/types/puzzle";
+import {
+  BoardMatrix,
+  PieceData,
+  Positions,
+  ContainerDimensions
+} from "@/types/puzzle";
 import { useSoundContext } from "@/app/contexts/SoundContext";
+import {
+  findExpectedCell,
+  getGridCellCoordinates,
+  calculateDistance
+} from "@/app/utils/gridUtils";
 
 const SNAPTHRESHOLD = 40;
 const SPREAD_DISTANCE = 500;
@@ -12,14 +22,13 @@ interface UsePuzzleSolverProps {
 }
 
 export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
-  const [positions, setPositions] = useState<{
-    [id: number]: { x: number; y: number };
-  }>({});
+  const [positions, setPositions] = useState<Positions>({});
   const [isGameCompleted, setIsGameCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { playSuccess, playComplete, playDrawLine } = useSoundContext();
 
   const getShuffledGridPositions = useCallback(
-    (containerWidth: number, containerHeight: number) => {
+    (containerWidth: number, containerHeight: number): Positions => {
       const padding = 20;
       const spacing = 10;
       const avgPieceWidth = pieces[0]?.width || 0;
@@ -39,7 +48,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       const startX = (containerWidth - gridWidth) / 2;
       const startY = (containerHeight - gridHeight) / 3;
 
-      const newPositions: { [id: number]: { x: number; y: number } } = {};
+      const newPositions: Positions = {};
       indices.forEach((shuffledIndex, originalIndex) => {
         const row = Math.floor(originalIndex / piecesPerRow);
         const col = originalIndex % piecesPerRow;
@@ -49,15 +58,15 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
           padding,
           Math.min(
             containerWidth - piece.width - padding,
-            startX + col * (avgPieceWidth + spacing),
-          ),
+            startX + col * (avgPieceWidth + spacing)
+          )
         );
         const y = Math.max(
           padding,
           Math.min(
             containerHeight - piece.height - padding,
-            startY + row * (avgPieceHeight + spacing),
-          ),
+            startY + row * (avgPieceHeight + spacing)
+          )
         );
 
         newPositions[piece.id] = { x, y };
@@ -65,26 +74,26 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
 
       return newPositions;
     },
-    [pieces],
+    [pieces]
   );
 
   const spreadPiecesFromCenter = useCallback(
     (
       containerWidth: number,
       containerHeight: number,
-      currentPositions: { [id: number]: { x: number; y: number } },
-    ) => {
+      currentPositions: Positions
+    ): Positions => {
       const padding = 40;
 
       const quadrants = [
         { minAngle: -Math.PI / 4, maxAngle: Math.PI / 4 }, // right
         { minAngle: Math.PI / 4, maxAngle: (3 * Math.PI) / 4 }, // up
         { minAngle: (3 * Math.PI) / 4, maxAngle: (-3 * Math.PI) / 4 }, // left
-        { minAngle: (-3 * Math.PI) / 4, maxAngle: -Math.PI / 4 }, // down
+        { minAngle: (-3 * Math.PI) / 4, maxAngle: -Math.PI / 4 } // down
       ];
 
       let quadrantIndex = 0;
-      const newPositions: { [id: number]: { x: number; y: number } } = {};
+      const newPositions: Positions = {};
 
       pieces.forEach((piece) => {
         const currentPos = currentPositions[piece.id];
@@ -101,15 +110,15 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
           padding,
           Math.min(
             containerWidth - piece.width - padding,
-            currentPos.x + Math.cos(angle) * SPREAD_DISTANCE,
-          ),
+            currentPos.x + Math.cos(angle) * SPREAD_DISTANCE
+          )
         );
         const y = Math.max(
           padding,
           Math.min(
             containerHeight - piece.height - padding,
-            currentPos.y + Math.sin(angle) * SPREAD_DISTANCE,
-          ),
+            currentPos.y + Math.sin(angle) * SPREAD_DISTANCE
+          )
         );
 
         newPositions[piece.id] = { x, y };
@@ -117,7 +126,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
 
       return newPositions;
     },
-    [pieces],
+    [pieces]
   );
 
   const shufflePieces = useCallback(
@@ -125,14 +134,14 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       setIsAnimating(true);
       const shuffledPositions = getShuffledGridPositions(
         containerWidth,
-        containerHeight,
+        containerHeight
       );
       setPositions(shuffledPositions);
       setTimeout(() => {
         const spreadPositions = spreadPiecesFromCenter(
           containerWidth,
           containerHeight,
-          shuffledPositions,
+          shuffledPositions
         );
         setPositions(spreadPositions);
         setTimeout(() => {
@@ -140,95 +149,34 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
         }, ANIMATION_DELAY);
       }, ANIMATION_DELAY);
     },
-    [getShuffledGridPositions, spreadPiecesFromCenter],
+    [getShuffledGridPositions, spreadPiecesFromCenter]
   );
-
-  const findExpectedCell = useCallback(
-    (pieceId: number) => {
-      let expectedRow = -1;
-      let expectedCol = -1;
-
-      for (let row = 0; row < solution.rows; row++) {
-        const col = solution.grid[row].indexOf(pieceId);
-        if (col !== -1) {
-          expectedRow = row;
-          expectedCol = col;
-          break;
-        }
-      }
-
-      return { row: expectedRow, col: expectedCol };
-    },
-    [solution],
-  );
-
-  const getGridCellCoordinates = useCallback(
-    (row: number, col: number, targetPieceId: number) => {
-      let totalWidth = 0;
-      let totalHeight = 0;
-
-      for (let c = 0; c < solution.cols; c++) {
-        const colPiece = pieces.find((p) => solution.grid[0][c] === p.id);
-        if (colPiece) totalWidth += colPiece.width;
-      }
-
-      for (let r = 0; r < solution.rows; r++) {
-        const rowPiece = pieces.find((p) => solution.grid[r][0] === p.id);
-        if (rowPiece) totalHeight += rowPiece.height;
-      }
-
-      const containerWidth =
-        document.getElementById("puzzle-board")?.clientWidth || 1000;
-      const containerHeight =
-        document.getElementById("puzzle-board")?.clientHeight || 800;
-      const startX = (containerWidth - totalWidth) / 2;
-      const startY = (containerHeight - totalHeight) / 2;
-
-      let x = startX;
-      for (let c = 0; c < col; c++) {
-        const colPiece = pieces.find((p) => solution.grid[row][c] === p.id);
-        if (colPiece) x += colPiece.width;
-      }
-
-      let y = startY;
-      for (let r = 0; r < row; r++) {
-        const rowPiece = pieces.find((p) => solution.grid[r][col] === p.id);
-        if (rowPiece) y += rowPiece.height;
-      }
-
-      const targetPiece = pieces.find((p) => p.id === targetPieceId);
-      if (targetPiece) {
-        const currentCellPiece = pieces.find(
-          (p) => solution.grid[row][col] === p.id,
-        );
-        if (currentCellPiece) {
-          x += (currentCellPiece.width - targetPiece.width) / 2;
-          y += (currentCellPiece.height - targetPiece.height) / 2;
-        }
-      }
-
-      return { x, y };
-    },
-    [solution.grid, solution.cols, solution.rows, pieces],
-  );
-
-  const { playSuccess, playComplete, playDrawLine } = useSoundContext();
 
   const onPieceMove = useCallback(
     (pieceId: number, x: number, y: number) => {
       if (isAnimating) return;
 
-      const expectedCell = findExpectedCell(pieceId);
+      const expectedCell = findExpectedCell(pieceId, solution);
       if (expectedCell.row === -1 || expectedCell.col === -1) return;
+
+      const container = document.getElementById("puzzle-board");
+      if (!container) return;
+
+      const containerDimensions: ContainerDimensions = {
+        width: container.clientWidth,
+        height: container.clientHeight
+      };
 
       const expectedPos = getGridCellCoordinates(
         expectedCell.row,
         expectedCell.col,
         pieceId,
+        solution,
+        pieces,
+        containerDimensions
       );
-      const distance = Math.sqrt(
-        Math.pow(x - expectedPos.x, 2) + Math.pow(y - expectedPos.y, 2),
-      );
+
+      const distance = calculateDistance({ x, y }, expectedPos);
 
       let finalPosition = { x, y };
       let isSnapped = false;
@@ -254,11 +202,11 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
 
         return {
           ...prev,
-          [pieceId]: finalPosition,
+          [pieceId]: finalPosition
         };
       });
     },
-    [findExpectedCell, getGridCellCoordinates, solution.grid, isAnimating],
+    [isAnimating, pieces, playSuccess, solution]
   );
 
   const getCurrentMatrix = useCallback((): BoardMatrix => {
@@ -270,21 +218,30 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
       const pos = positions[piece.id];
       if (!pos) return;
 
-      const expectedCell = findExpectedCell(piece.id);
+      const expectedCell = findExpectedCell(piece.id, solution);
       if (expectedCell.row === -1 || expectedCell.col === -1) return;
+
+      const container = document.getElementById("puzzle-board");
+      if (!container) return;
+
+      const containerDimensions: ContainerDimensions = {
+        width: container.clientWidth,
+        height: container.clientHeight
+      };
 
       const expectedPos = getGridCellCoordinates(
         expectedCell.row,
         expectedCell.col,
         piece.id,
-      );
-      const snapThreshold = SNAPTHRESHOLD;
-      const distance = Math.sqrt(
-        Math.pow(pos.x - expectedPos.x, 2) + Math.pow(pos.y - expectedPos.y, 2),
+        solution,
+        pieces,
+        containerDimensions
       );
 
+      const distance = calculateDistance(pos, expectedPos);
+
       if (
-        distance < snapThreshold &&
+        distance < SNAPTHRESHOLD &&
         solution.grid[expectedCell.row][expectedCell.col] === piece.id
       ) {
         matrix[expectedCell.row][expectedCell.col] = piece.id;
@@ -294,16 +251,9 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     return {
       rows: solution.rows,
       cols: solution.cols,
-      grid: matrix,
+      grid: matrix
     };
-  }, [
-    positions,
-    solution.rows,
-    solution.cols,
-    getGridCellCoordinates,
-    findExpectedCell,
-    solution.grid,
-  ]);
+  }, [pieces, positions, solution]);
 
   const isSolved = useCallback(() => {
     if (isGameCompleted) return true;
@@ -327,7 +277,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     }
 
     return isCorrect;
-  }, [getCurrentMatrix, solution, isGameCompleted]);
+  }, [getCurrentMatrix, isGameCompleted, playComplete, solution]);
 
   const getProgress = useCallback((): number => {
     const currentMatrix = getCurrentMatrix();
@@ -359,7 +309,7 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     playDrawLine();
     shufflePieces(width, height);
     setIsGameCompleted(false);
-  }, [shufflePieces]);
+  }, [playDrawLine, shufflePieces]);
 
   return {
     positions,
@@ -368,6 +318,6 @@ export const usePuzzleSolver = ({ pieces, solution }: UsePuzzleSolverProps) => {
     shufflePieces,
     getProgress,
     restart,
-    isAnimating,
+    isAnimating
   };
 };
