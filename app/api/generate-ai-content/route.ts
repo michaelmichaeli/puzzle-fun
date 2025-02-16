@@ -1,9 +1,13 @@
 import { NextRequest } from "next/server";
 import { AiGeneratedContent } from "@/types/puzzle";
-import { createClarifaiAPI } from "../clarifai";
+import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
-const MODEL_ID = "general-image-recognition";
-const MODEL_VERSION_ID = "aa7f35c01e0642fda5cf400f543e7c40";
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY as string,
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,42 +17,49 @@ export async function POST(req: NextRequest) {
       return new Response("Image URL is required", { status: 400 });
     }
 
-    if (!process.env.CLARIFAI_PAT) {
+    if (!process.env.OPENAI_API_KEY) {
       return new Response("Server configuration error", { status: 500 });
     }
 
-    const clarifai = createClarifaiAPI({
-      userId: process.env.CLARIFAI_USER_ID || "clarifai",
-      appId: process.env.CLARIFAI_APP_ID || "main",
-      pat: process.env.CLARIFAI_PAT,
-    });
-
     try {
-      const response = await clarifai.predictImage(
-        imageUrl,
-        MODEL_ID,
-        MODEL_VERSION_ID,
-      );
+      const messages: ChatCompletionMessageParam[] = [
+        {
+          role: "system",
+          content: `You are an AI image analysis expert. Analyze the image and provide:
+          1. A concise title (1-3 words) that captures the main subject
+          2. A brief description (1 sentence) highlighting the key elements
+          3. A contextual explanation that describes the image's contents and significance
+          Format your response as:
+          <title> | <description> | <context>
+          Use the '|' separator without line breaks.`,
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Analyze this image and return its Title, Description, and Context in a structured format." },
+            {
+              type: "image_url",
+              image_url: {
+                url: imageUrl
+              }
+            },
+          ],
+        },
+      ];
 
-      if (!response.outputs?.[0]?.data?.concepts) {
-        return new Response("Invalid response from Clarifai", { status: 500 });
-      }
- 
-      const concepts = response.outputs[0].data.concepts
-        .slice(0, 5)
-        .map((c) => ({ name: c.name, confidence: c.value }));
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages,
+        max_tokens: 700,
+      });
 
-      const conceptDescriptions = concepts
-        .map(c => `${c.name} (${Math.round(c.confidence * 100)}% confidence)`)
-        .join(", ");
-
-      const puzzleContext = `This puzzle contains elements of: ${conceptDescriptions}. 
-        These elements create a complete image that you'll be assembling.`;
+      const analysis = response.choices[0].message?.content || "";
+      const [title, description, context] = analysis.split("|").map((str: string) => str.trim());
 
       const aiContent: AiGeneratedContent = {
-        title: concepts[0]?.name || "Puzzle",
-        description: `This puzzle shows ${concepts[0].name} (${Math.round(concepts[0].confidence * 100)}% confidence).`,
-        context: puzzleContext,
+        title: title || "Puzzle",
+        description: description || "An intriguing puzzle image",
+        context: context || "A fascinating puzzle waiting to be solved",
       };
 
       return new Response(JSON.stringify(aiContent), {
@@ -57,7 +68,7 @@ export async function POST(req: NextRequest) {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error occurred";
-      return new Response(`Error calling Clarifai API: ${errorMessage}`, {
+      return new Response(`Error analyzing image: ${errorMessage}`, {
         status: 500,
       });
     }
