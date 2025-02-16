@@ -14,9 +14,9 @@ export const CloudsBackground = () => {
   const [clouds, setClouds] = useState<CloudPosition[]>([]);
 
   const generateClouds = useCallback(() => {
-    const newClouds: CloudPosition[] = Array.from({ length: 6 }, (_, i) => ({
+    const newClouds: CloudPosition[] = Array.from({ length: 10 }, (_, i) => ({
       id: i,
-      top: `${20 + Math.random() * 70}%`,
+      top: `${Math.random() * 100}%`,
       speed: 50 + Math.random() * 200,
       size: 50 + Math.random() * 300,
       delay: Math.random() * -30
