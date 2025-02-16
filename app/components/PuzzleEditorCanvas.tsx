@@ -6,21 +6,22 @@ import { PlaySound } from "@/types/ui";
 
 interface PuzzleEditorCanvasProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  handleMouseMove: (e: MouseEvent) => void;
-  handleClick: () => boolean;
+  handlePointerMove: (e: MouseEvent | TouchEvent) => void;
+  handlePointerDown: (e: MouseEvent | TouchEvent) => boolean;
   pieces: Piece[];
   playDrawLine: PlaySound;
 }
 
 export function PuzzleEditorCanvas({
   canvasRef,
-  handleMouseMove,
-  handleClick,
+  handlePointerMove,
+  handlePointerDown,
   pieces,
   playDrawLine,
 }: PuzzleEditorCanvasProps) {
-  const handleCanvasClick = () => {
-    const wasInvalid = handleClick();
+  const handlePointerEvent = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    const wasInvalid = handlePointerDown(e.nativeEvent);
     if (wasInvalid) {
       const wrapper = document.getElementById("canvas-wrapper");
       if (wrapper) {
@@ -56,9 +57,12 @@ export function PuzzleEditorCanvas({
         <div className="relative" id="canvas-wrapper">
           <canvas
             ref={canvasRef}
-            onMouseMove={(e) => handleMouseMove(e.nativeEvent)}
-            onClick={handleCanvasClick}
+            onMouseMove={(e) => handlePointerMove(e.nativeEvent)}
+            onClick={handlePointerEvent}
+            onTouchStart={handlePointerEvent}
+            onTouchMove={(e) => handlePointerMove(e.nativeEvent)}
             style={{
+              touchAction: "none",
               cursor: "crosshair",
               maxWidth: "100%",
               maxHeight: "100%",

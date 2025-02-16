@@ -190,14 +190,26 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     }
   }, [drawLines, image, lines, hoverPoint, scale]);
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
       const canvas = canvasRef.current;
       if (!canvas || !image || !originalDimensions) return;
 
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-      const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+      let clientX: number;
+      let clientY: number;
+
+      if (e instanceof MouseEvent) {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      } else {
+        const touch = e.touches[0];
+        clientX = touch.clientX;
+        clientY = touch.clientY;
+      }
+
+      const x = (clientX - rect.left) * (canvas.width / rect.width);
+      const y = (clientY - rect.top) * (canvas.height / rect.height);
 
       if (x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height) {
         setHoverPoint({ x, y });
@@ -208,7 +220,7 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     [image, originalDimensions],
   );
 
-  const handleClick = useCallback(() => {
+  const handlePointerDown = useCallback((e: MouseEvent | TouchEvent) => {
     if (!hoverPoint || !image || !originalDimensions || !canvasRef.current)
       return false;
 
@@ -350,8 +362,8 @@ export const usePuzzleEditor = ({ imageUrl }: UsePuzzleEditorProps) => {
     image,
     pieces,
     lines,
-    handleMouseMove,
-    handleClick,
+    handlePointerMove,
+    handlePointerDown,
     breakImage,
     resetLines,
   };

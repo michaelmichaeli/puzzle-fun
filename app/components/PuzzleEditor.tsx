@@ -31,8 +31,8 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
   const {
     canvasRef,
     pieces,
-    handleMouseMove,
-    handleClick,
+    handlePointerMove,
+    handlePointerDown,
     breakImage,
     resetLines,
     lines,
@@ -252,8 +252,8 @@ export default function PuzzleEditor({ imageUrl }: PuzzleEditorProps) {
 
         <PuzzleEditorCanvas
           canvasRef={canvasRef}
-          handleMouseMove={handleMouseMove}
-          handleClick={handleClick}
+          handlePointerMove={handlePointerMove}
+          handlePointerDown={handlePointerDown}
           pieces={pieces}
           playDrawLine={playDrawLine}
         />
