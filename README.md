@@ -6,7 +6,7 @@ A modern, interactive puzzle game where you can create and solve custom puzzles 
 
 ## 🎮 Play Now
 
-[Play Now](https://puzzle-game.vercel.app)
+[Play Now](https://puzzle-fun.vercel.app/)
 
 ## ✨ Features
 
